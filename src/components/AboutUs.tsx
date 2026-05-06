@@ -1,6 +1,15 @@
-import { GraduationCap, Briefcase, Globe, Code2 } from "lucide-react";
+import { GraduationCap, Briefcase, Globe, Code2, CheckCircle2 } from "lucide-react";
 
 export function AboutUs() {
+  const services = [
+    { icon: GraduationCap, title: "Skill Development", desc: "Career-focused technical training with practical tasks and mentor guidance." },
+    { icon: Briefcase, title: "Job Placements", desc: "Resume support, interview practice and company opportunity guidance." },
+    { icon: Globe, title: "Overseas Consultancy", desc: "Guidance for abroad study and career pathways with clear next steps." },
+    { icon: Code2, title: "IT Staffing", desc: "Talent support for companies looking for trained and job-ready candidates." },
+  ];
+
+  const why = ["Industry Trainers", "Real Projects", "Placement Support", "Interview Training"];
+
   return (
     <section id="about" className="py-16 lg:py-20 bg-gradient-to-b from-background via-secondary/30 to-background">
       <div className="mx-auto max-w-7xl px-4 sm:px-5 lg:px-8">
@@ -29,28 +38,35 @@ export function AboutUs() {
 
         {/* Our Services */}
         <div className="mb-16">
-          <h3 className="text-2xl font-extrabold text-primary mb-8 text-center">Our Services</h3>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <ServiceCard
-              icon={GraduationCap}
-              title="Skill Development & Certification Programs"
-              emoji="🎓"
-            />
-            <ServiceCard
-              icon={Briefcase}
-              title="Job Placement Assistance"
-              emoji="💼"
-            />
-            <ServiceCard
-              icon={Globe}
-              title="Overseas Consultancy Services"
-              emoji="🌍"
-            />
-            <ServiceCard
-              icon={Code2}
-              title="IT Staffing Solutions"
-              emoji="💻"
-            />
+          <h3 className="text-2xl font-extrabold text-primary mb-8 text-center">Everything Kridha Offers in One Place</h3>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {services.map(({ icon: Icon, title, desc }) => (
+              <div key={title} className="group rounded-3xl border border-border bg-card p-6 shadow-soft transition duration-200 hover:-translate-y-2 hover:scale-[1.02] hover:shadow-glow">
+                <div className="grid h-14 w-14 place-items-center rounded-2xl bg-primary text-accent transition group-hover:bg-accent group-hover:text-primary">
+                  <Icon className="h-7 w-7" />
+                </div>
+                <h4 className="mt-5 text-xl font-extrabold text-primary">{title}</h4>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Built for students section */}
+        <div className="bg-secondary/45 rounded-3xl py-12 px-8 mb-16">
+          <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
+            <div>
+              <span className="text-xs font-extrabold uppercase tracking-[0.22em] text-emerald-600">Why Kridha</span>
+              <h3 className="mt-3 text-3xl font-extrabold text-primary sm:text-4xl">Built for students who want outcomes, not just classes</h3>
+              <p className="mt-4 text-muted-foreground">The program keeps the core promise simple: learn properly, build proof, practice interviews and get placement support.</p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {why.map((x) => (
+                <div key={x} className="flex items-center gap-3 rounded-2xl bg-white p-5 font-extrabold text-primary shadow-soft">
+                  <CheckCircle2 className="h-6 w-6 shrink-0 text-emerald-600" /> {x}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -71,15 +87,5 @@ export function AboutUs() {
         </div>
       </div>
     </section>
-  );
-}
-
-function ServiceCard({ icon: Icon, title, emoji }: { icon: React.ElementType; title: string; emoji: string }) {
-  return (
-    <div className="rounded-2xl border border-border bg-card p-6 shadow-soft hover:shadow-glow hover:-translate-y-1 transition text-center">
-      <div className="text-4xl mb-3">{emoji}</div>
-      <Icon className="h-8 w-8 text-emerald-600 mx-auto mb-3" />
-      <p className="font-extrabold text-primary leading-snug">{title}</p>
-    </div>
   );
 }
