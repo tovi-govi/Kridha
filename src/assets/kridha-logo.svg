@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 180" role="img" aria-labelledby="title desc">
+  <title id="title">Kridha Software Solutions Private Limited</title>
+  <desc id="desc">Kridha logo in navy and green</desc>
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#00E676"/>
+      <stop offset="1" stop-color="#087A35"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="18" width="120" height="120" rx="18" fill="none" stroke="#0A1F44" stroke-width="14"/>
+  <path d="M94 34 L38 88 L98 150 L133 150 L76 90 L132 34 Z" fill="#0A1F44"/>
+  <path d="M92 107 C126 114 155 138 176 165 L140 165 C119 138 102 121 77 114 Z" fill="url(#g)"/>
+  <rect x="11" y="78" width="10" height="10" fill="#0A1F44"/><rect x="31" y="62" width="13" height="13" fill="#087A35"/><rect x="49" y="78" width="15" height="15" fill="#0A1F44"/><rect x="28" y="103" width="11" height="11" fill="#00E676"/><rect x="56" y="111" width="16" height="16" fill="#087A35"/>
+  <text x="210" y="86" fill="#0A1F44" font-family="Poppins, Montserrat, Arial, sans-serif" font-size="68" font-weight="800" letter-spacing="8">KRIDHA</text>
+  <text x="213" y="128" fill="#087A35" font-family="Montserrat, Arial, sans-serif" font-size="27" font-weight="800" letter-spacing="8">SOFTWARE SOLUTIONS</text>
+  <line x1="213" y1="151" x2="340" y2="151" stroke="#0A1F44" stroke-width="4"/>
+  <text x="358" y="160" fill="#0A1F44" font-family="Montserrat, Arial, sans-serif" font-size="24" font-weight="700" letter-spacing="9">PRIVATE LIMITED</text>
+  <line x1="650" y1="151" x2="760" y2="151" stroke="#0A1F44" stroke-width="4"/>
+</svg>
