@@ -1,7 +1,15 @@
+import { Link } from "@tanstack/react-router";
 import { site, waLink } from "@/lib/site";
 import { Logo } from "@/components/Logo";
 
 export function Footer() {
+  const handleNavClick = (href: string) => {
+    if (href.startsWith("#")) {
+      const element = document.querySelector(href);
+      element?.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <footer className="bg-primary text-white" style={{ colorScheme: "normal" }}>
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-5 lg:px-8">
@@ -13,7 +21,10 @@ export function Footer() {
           <div>
             <h3 className="font-extrabold">Quick Links</h3>
             <div className="mt-3 grid gap-2 text-sm text-white/70">
-              <a href="#services">Services</a><a href="#courses">Courses</a><a href="#placements">Placements</a><a href="#book">Book Demo</a>
+              <Link to="/courses" className="hover:text-white transition">Services</Link>
+              <Link to="/placement-process" className="hover:text-white transition">Placement Process</Link>
+              <button onClick={() => handleNavClick("#pricing")} className="text-left hover:text-white transition">Offer</button>
+              <button onClick={() => handleNavClick("#book")} className="text-left hover:text-white transition">Book Demo</button>
             </div>
           </div>
           <div>
