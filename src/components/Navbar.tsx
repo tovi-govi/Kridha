@@ -30,7 +30,7 @@ export function Navbar() {
     <header className="sticky top-0 z-40 border-b border-border bg-white/90 backdrop-blur-xl">
       <div className="mx-auto flex h-14 sm:h-16 max-w-7xl items-center justify-between px-3 sm:px-5 lg:px-8 gap-3">
         <Link to="/" className="flex items-center flex-shrink-0">
-          <Logo className="h-9 sm:h-11 w-auto max-w-[180px] sm:max-w-[210px]" />
+          <Logo className="h-14 sm:h-16 w-auto max-w-[220px] sm:max-w-[260px]" variant="navbar" />
         </Link>
 
         <nav className="hidden items-center gap-5 lg:gap-7 md:flex flex-1 justify-end">
