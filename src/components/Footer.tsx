@@ -21,10 +21,11 @@ export function Footer() {
           <div>
             <h3 className="font-extrabold">Quick Links</h3>
             <div className="mt-3 grid gap-2 text-sm text-white/70">
+              <Link to="/" className="hover:text-white transition">Home</Link>
               <Link to="/courses" className="hover:text-white transition">Services</Link>
               <Link to="/placement-process" className="hover:text-white transition">Placement Process</Link>
-              <button onClick={() => handleNavClick("#pricing")} className="text-left hover:text-white transition">Offer</button>
-              <button onClick={() => handleNavClick("#book")} className="text-left hover:text-white transition">Book Demo</button>
+              <button onClick={() => handleNavClick("#about")} className="text-left hover:text-white transition">About Us</button>
+              <button onClick={() => handleNavClick("#book")} className="text-left hover:text-white transition">Demo</button>
             </div>
           </div>
           <div>
