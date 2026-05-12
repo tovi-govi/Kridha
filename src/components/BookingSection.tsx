@@ -1,11 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import emailjs from "@emailjs/browser";
 
 const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID || "";
 const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "";
 const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "";
 
-// Initialize EmailJS
 if (EMAILJS_PUBLIC_KEY) {
   emailjs.init(EMAILJS_PUBLIC_KEY);
 }
@@ -43,12 +42,11 @@ export function BookingSection() {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    // Validate form
     if (!form.name || !form.email || !form.phone || !form.course) {
       setError("Please fill in all fields.");
       setLoading(false);
@@ -62,11 +60,6 @@ export function BookingSection() {
     }
 
     try {
-      console.log("Sending email with:");
-      console.log("Service ID:", EMAILJS_SERVICE_ID);
-      console.log("Template ID:", EMAILJS_TEMPLATE_ID);
-      console.log("Form data:", form);
-
       const response = await emailjs.send(
         EMAILJS_SERVICE_ID,
         EMAILJS_TEMPLATE_ID,
@@ -90,7 +83,8 @@ export function BookingSection() {
 
       setTimeout(() => setSubmitted(false), 5000);
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to send email. Please try again.";
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to send email. Please try again.";
       setError(errorMessage);
       console.error("Email error:", err);
     } finally {
@@ -102,12 +96,16 @@ export function BookingSection() {
     <section id="book" className="py-16 lg:py-20 bg-background">
       <div className="mx-auto max-w-7xl px-4 sm:px-5 lg:px-8">
         <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
-          {/* Left Content */}
           <div>
-            <span className="text-xs font-extrabold uppercase tracking-[0.22em] text-emerald-600">Free Career Demo</span>
-            <h2 className="mt-3 text-3xl font-extrabold text-primary sm:text-4xl lg:text-5xl">Start your job-ready journey today</h2>
+            <span className="text-xs font-extrabold uppercase tracking-[0.22em] text-emerald-600">
+              Free Career Demo
+            </span>
+            <h2 className="mt-3 text-3xl font-extrabold text-primary sm:text-4xl lg:text-5xl">
+              Start your job-ready journey today
+            </h2>
             <p className="mt-4 text-muted-foreground">
-              Fill in your details and our team will contact you for a free demo, course guidance, and placement roadmap.
+              Fill in your details and our team will contact you for a free demo, course guidance,
+              and placement roadmap.
             </p>
 
             <div className="mt-6 space-y-3">
@@ -123,7 +121,6 @@ export function BookingSection() {
             </div>
           </div>
 
-          {/* Right Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <h3 className="text-xl font-extrabold text-primary">Book Free Demo</h3>
 

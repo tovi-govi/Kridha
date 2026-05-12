@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import type { ElementType } from "react";
 import { Code, Layers, BrainCircuit, Cloud, ShieldCheck, Rocket } from "lucide-react";
 
 type Course = {
@@ -7,7 +8,7 @@ type Course = {
   title: string;
   subtitle: string;
   color: string;
-  icon: React.ElementType;
+  icon: ElementType;
   topics: string[];
   cta: string;
   isNew?: boolean;
@@ -32,7 +33,12 @@ const courses: Course[] = [
     subtitle: "End-to-end web apps",
     color: "#2563EB",
     icon: Layers,
-    topics: ["Frontend (HTML, CSS, JS, React)", "Backend (Node.js / Java / Python)", "Database (SQL, MongoDB)", "Real-Time Projects"],
+    topics: [
+      "Frontend (HTML, CSS, JS, React)",
+      "Backend (Node.js / Java / Python)",
+      "Database (SQL, MongoDB)",
+      "Real-Time Projects",
+    ],
     cta: "Become a Complete Developer",
     isNew: true,
   },
@@ -84,13 +90,20 @@ const courses: Course[] = [
 
 export function CoursesCatalog() {
   return (
-    <section id="services" className="py-16 lg:py-20 bg-gradient-to-b from-background to-secondary/20">
+    <section
+      id="services"
+      className="py-16 lg:py-20 bg-gradient-to-b from-background to-secondary/20"
+    >
       <div className="mx-auto max-w-7xl px-4 sm:px-5 lg:px-8">
         <div className="mx-auto max-w-2xl text-center mb-12">
-          <span className="text-xs font-extrabold uppercase tracking-[0.22em] text-emerald-600">Our Courses</span>
+          <span className="text-xs font-extrabold uppercase tracking-[0.22em] text-emerald-600">
+            Our Courses
+          </span>
+
           <h2 className="mt-3 text-3xl font-extrabold text-primary sm:text-4xl lg:text-5xl">
             Master In-Demand Skills
           </h2>
+
           <p className="mt-4 text-muted-foreground">
             Choose from our carefully designed courses to build your career in tech
           </p>
@@ -103,13 +116,11 @@ export function CoursesCatalog() {
               to="/courses"
               className="group relative overflow-hidden rounded-2xl border border-border/50 bg-card p-6 shadow-soft transition hover:shadow-glow hover:-translate-y-1 cursor-pointer"
             >
-              {/* Background gradient */}
               <div
                 className="absolute inset-0 opacity-5 group-hover:opacity-10 transition"
                 style={{ backgroundColor: course.color }}
-              ></div>
+              />
 
-              {/* Number Badge */}
               <div
                 className="absolute top-4 right-4 h-10 w-10 rounded-full flex items-center justify-center font-extrabold text-white text-lg"
                 style={{ backgroundColor: course.color }}
@@ -117,7 +128,6 @@ export function CoursesCatalog() {
                 {course.number}
               </div>
 
-              {/* New Course Badge */}
               {course.isNew && (
                 <div
                   className="absolute top-4 left-4 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider text-white"
@@ -127,7 +137,6 @@ export function CoursesCatalog() {
                 </div>
               )}
 
-              {/* Icon */}
               <div
                 className="inline-flex h-14 w-14 items-center justify-center rounded-xl text-white mb-4"
                 style={{ backgroundColor: course.color }}
@@ -135,13 +144,14 @@ export function CoursesCatalog() {
                 <course.icon className="h-7 w-7" />
               </div>
 
-              {/* Title & Subtitle */}
-              <h3 className="mt-4 text-xl font-extrabold text-primary">{course.title}</h3>
+              <h3 className="mt-4 text-xl font-extrabold text-primary">
+                {course.title}
+              </h3>
+
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-1">
                 {course.subtitle}
               </p>
 
-              {/* Topics */}
               <div className="mt-4 space-y-2">
                 {course.topics.map((topic, idx) => (
                   <div key={idx} className="flex items-start gap-2 text-sm">
@@ -151,7 +161,6 @@ export function CoursesCatalog() {
                 ))}
               </div>
 
-              {/* CTA Button */}
               <div
                 className="mt-6 w-full py-3 px-4 rounded-full text-center font-extrabold text-white transition group-hover:opacity-90 flex items-center justify-center gap-2"
                 style={{ backgroundColor: course.color }}
