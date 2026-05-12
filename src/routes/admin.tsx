@@ -33,8 +33,16 @@ function getDateMs(row: Row) {
   return row.createdAt ? row.createdAt.seconds * 1000 : 0;
 }
 
-function exportToExcel(rows: Row[]) {
-  const headers = ["Date", "Name", "Phone", "Email", "Course", "Notes", "Checked Out"];
+function exportToCSV(rows: Row[]) {
+  const headers = [
+    "Date",
+    "Name",
+    "Phone",
+    "Email",
+    "Course",
+    "Notes",
+    "Checked Out",
+  ];
 
   const data = rows.map((r) => [
     r.createdAt ? new Date(r.createdAt.seconds * 1000).toLocaleString() : "—",
@@ -47,22 +55,28 @@ function exportToExcel(rows: Row[]) {
   ]);
 
   const csv = [headers, ...data]
-    .map((row) => row.map((cell) => `"${cell}"`).join(","))
+    .map((row) =>
+      row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
+    )
     .join("\n");
 
-  const blob = new Blob([csv], { type: "text/csv" });
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
+
   const a = document.createElement("a");
   a.href = url;
   a.download = `kridha-bookings-${new Date().toISOString().slice(0, 10)}.csv`;
   a.click();
+
   URL.revokeObjectURL(url);
 }
 
 function AdminPage() {
   const { user, loading, signOut } = useAuth();
+
   const [rows, setRows] = useState<Row[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+
   const [search, setSearch] = useState("");
   const [courseFilter, setCourseFilter] = useState("All");
   const [sortDir, setSortDir] = useState<"desc" | "asc">("desc");
@@ -73,6 +87,8 @@ function AdminPage() {
     if (!isAdmin) return;
 
     async function loadBookings() {
+      setError(null);
+
       try {
         const snap = await getDocs(
           query(collection(db, "bookings"), orderBy("createdAt", "desc"))
@@ -86,6 +102,7 @@ function AdminPage() {
         setRows(bookings);
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : "Failed to load bookings");
+        setRows([]);
       }
     }
 
@@ -95,25 +112,72 @@ function AdminPage() {
   async function toggleCheckedOut(id: string, checkedOut: boolean) {
     if (!rows) return;
 
-    const previousRows = rows;
+    const oldRows = rows;
 
-    setRows((currentRows) =>
-      currentRows
-        ? currentRows.map((row) =>
-            row.id === id ? { ...row, checkedOut } : row
-          )
-        : currentRows
+    setRows(
+      rows.map((row) => (row.id === id ? { ...row, checkedOut } : row))
     );
+
+    setError(null);
 
     try {
       await updateDoc(doc(db, "bookings", id), {
         checkedOut,
       });
     } catch (err: unknown) {
-      setRows(previousRows);
-      setError(err instanceof Error ? err.message : "Failed to update checked status");
+      setRows(oldRows);
+      setError(err instanceof Error ? err.message : "Failed to update status");
     }
   }
+
+  const filtered = useMemo(() => {
+    return (rows || [])
+      .filter((r) => {
+        const searchText = search.toLowerCase();
+
+        const matchesSearch =
+          !searchText ||
+          [r.name, r.phone, r.email, r.course, r.message].some((value) =>
+            value?.toLowerCase().includes(searchText)
+          );
+
+        const matchesCourse =
+          courseFilter === "All" || r.course === courseFilter;
+
+        return matchesSearch && matchesCourse;
+      })
+      .sort((a, b) => {
+        const dateA = getDateMs(a);
+        const dateB = getDateMs(b);
+
+        return sortDir === "desc" ? dateB - dateA : dateA - dateB;
+      });
+  }, [rows, search, courseFilter, sortDir]);
+
+  const courses = [
+    "All",
+    ...Array.from(new Set((rows || []).map((r) => r.course).filter(Boolean))),
+  ];
+
+  const totalBookings = rows?.length ?? 0;
+
+  const uniqueCourses = new Set(
+    (rows || []).map((r) => r.course).filter(Boolean)
+  ).size;
+
+  const checkedCount = (rows || []).filter((r) => r.checkedOut).length;
+
+  const thisWeek = (rows || []).filter((r) => {
+    if (!r.createdAt) return false;
+
+    const bookingDate = new Date(r.createdAt.seconds * 1000);
+    const now = new Date();
+
+    const diffDays =
+      (now.getTime() - bookingDate.getTime()) / (1000 * 60 * 60 * 24);
+
+    return diffDays <= 7;
+  }).length;
 
   if (loading) {
     return (
@@ -128,9 +192,11 @@ function AdminPage() {
       <div className="min-h-screen grid place-items-center bg-background px-4">
         <div className="max-w-sm w-full text-center bg-card border border-border rounded-2xl p-8">
           <h1 className="text-xl font-bold">Admin access</h1>
+
           <p className="mt-2 text-sm text-muted-foreground">
             Please sign in to continue.
           </p>
+
           <Link
             to="/login"
             className="mt-5 inline-block rounded-full bg-primary text-primary-foreground px-5 py-2 font-semibold"
@@ -147,10 +213,12 @@ function AdminPage() {
       <div className="min-h-screen grid place-items-center bg-background px-4">
         <div className="max-w-sm w-full text-center bg-card border border-border rounded-2xl p-8">
           <h1 className="text-xl font-bold">Not authorised</h1>
+
           <p className="mt-2 text-sm text-muted-foreground">
-            Signed in as {user.email}. Add this email to <code>ADMIN_EMAILS</code>{" "}
-            in <code>src/lib/firebase.ts</code> to grant access.
+            Signed in as {user.email}. Add this email to{" "}
+            <code>ADMIN_EMAILS</code> in <code>src/lib/firebase.ts</code>.
           </p>
+
           <button
             onClick={signOut}
             className="mt-5 rounded-full border border-border px-5 py-2 font-semibold"
@@ -162,47 +230,6 @@ function AdminPage() {
     );
   }
 
-  const courses = [
-    "All",
-    ...Array.from(new Set(rows?.map((r) => r.course || "").filter(Boolean))),
-  ];
-
-  const filtered = useMemo(() => {
-    return (rows || [])
-      .filter((r) => {
-        const matchSearch =
-          !search ||
-          [r.name, r.phone, r.email, r.course, r.message].some((v) =>
-            v?.toLowerCase().includes(search.toLowerCase())
-          );
-
-        const matchCourse = courseFilter === "All" || r.course === courseFilter;
-
-        return matchSearch && matchCourse;
-      })
-      .sort((a, b) => {
-        const dateA = getDateMs(a);
-        const dateB = getDateMs(b);
-
-        return sortDir === "desc" ? dateB - dateA : dateA - dateB;
-      });
-  }, [rows, search, courseFilter, sortDir]);
-
-  const totalBookings = rows?.length ?? 0;
-  const uniqueCourses = new Set(rows?.map((r) => r.course).filter(Boolean)).size;
-  const checkedCount = rows?.filter((r) => r.checkedOut).length ?? 0;
-
-  const thisWeek =
-    rows?.filter((r) => {
-      if (!r.createdAt) return false;
-
-      const d = new Date(r.createdAt.seconds * 1000);
-      const now = new Date();
-      const diff = (now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24);
-
-      return diff <= 7;
-    }).length ?? 0;
-
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card">
@@ -211,6 +238,7 @@ function AdminPage() {
             <div className="h-8 w-8 rounded-lg bg-hero-gradient grid place-items-center text-white font-bold text-sm">
               K
             </div>
+
             <div>
               <h1 className="font-bold text-sm">Kridha Admin</h1>
               <p className="text-xs text-muted-foreground">{user.email}</p>
@@ -219,10 +247,11 @@ function AdminPage() {
 
           <div className="flex items-center gap-3">
             <button
-              onClick={() => rows && exportToExcel(filtered)}
+              onClick={() => exportToCSV(filtered)}
               className="inline-flex items-center gap-2 rounded-full bg-emerald-600 text-white px-4 py-2 text-sm font-semibold hover:bg-emerald-700 transition"
             >
-              <Download className="h-4 w-4" /> Export CSV
+              <Download className="h-4 w-4" />
+              Export CSV
             </button>
 
             <Link
@@ -244,56 +273,55 @@ function AdminPage() {
 
       <main className="mx-auto max-w-7xl px-5 lg:px-8 py-8 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {[
-            {
-              label: "Total Bookings",
-              value: totalBookings,
-              icon: Users,
-              color: "text-blue-600",
-              bg: "bg-blue-50",
-            },
-            {
-              label: "This Week",
-              value: thisWeek,
-              icon: TrendingUp,
-              color: "text-emerald-600",
-              bg: "bg-emerald-50",
-            },
-            {
-              label: "Courses",
-              value: uniqueCourses,
-              icon: BookOpen,
-              color: "text-violet-600",
-              bg: "bg-violet-50",
-            },
-            {
-              label: "Checked Out",
-              value: checkedCount,
-              icon: Users,
-              color: "text-orange-600",
-              bg: "bg-orange-50",
-            },
-          ].map((s) => (
-            <div
-              key={s.label}
-              className="rounded-2xl border border-border bg-card p-5 flex items-center gap-4"
-            >
-              <div
-                className={`h-12 w-12 rounded-xl ${s.bg} grid place-items-center shrink-0`}
-              >
-                <s.icon className={`h-6 w-6 ${s.color}`} />
-              </div>
+          <div className="rounded-2xl border border-border bg-card p-5 flex items-center gap-4">
+            <div className="h-12 w-12 rounded-xl bg-blue-50 grid place-items-center shrink-0">
+              <Users className="h-6 w-6 text-blue-600" />
+            </div>
 
-              <div>
-                <div className="text-2xl font-extrabold">{s.value}</div>
-                <div className="text-xs text-muted-foreground">{s.label}</div>
+            <div>
+              <div className="text-2xl font-extrabold">{totalBookings}</div>
+              <div className="text-xs text-muted-foreground">
+                Total Bookings
               </div>
             </div>
-          ))}
+          </div>
+
+          <div className="rounded-2xl border border-border bg-card p-5 flex items-center gap-4">
+            <div className="h-12 w-12 rounded-xl bg-emerald-50 grid place-items-center shrink-0">
+              <TrendingUp className="h-6 w-6 text-emerald-600" />
+            </div>
+
+            <div>
+              <div className="text-2xl font-extrabold">{thisWeek}</div>
+              <div className="text-xs text-muted-foreground">This Week</div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-card p-5 flex items-center gap-4">
+            <div className="h-12 w-12 rounded-xl bg-violet-50 grid place-items-center shrink-0">
+              <BookOpen className="h-6 w-6 text-violet-600" />
+            </div>
+
+            <div>
+              <div className="text-2xl font-extrabold">{uniqueCourses}</div>
+              <div className="text-xs text-muted-foreground">Courses</div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-card p-5 flex items-center gap-4">
+            <div className="h-12 w-12 rounded-xl bg-orange-50 grid place-items-center shrink-0">
+              <Users className="h-6 w-6 text-orange-600" />
+            </div>
+
+            <div>
+              <div className="text-2xl font-extrabold">{checkedCount}</div>
+              <div className="text-xs text-muted-foreground">Checked Out</div>
+            </div>
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-3 items-center">
-          <div className="relative flex-1 min-w-[200px]">
+          <div className="relative flex-1 min-w-[220px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 
             <input
@@ -309,13 +337,17 @@ function AdminPage() {
             onChange={(e) => setCourseFilter(e.target.value)}
             className="rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
           >
-            {courses.map((c) => (
-              <option key={c}>{c}</option>
+            {courses.map((course) => (
+              <option key={course} value={course}>
+                {course}
+              </option>
             ))}
           </select>
 
           <button
-            onClick={() => setSortDir((prev) => (prev === "desc" ? "asc" : "desc"))}
+            onClick={() =>
+              setSortDir((prev) => (prev === "desc" ? "asc" : "desc"))
+            }
             className="rounded-xl border border-border bg-background px-3 py-2 text-sm font-semibold hover:bg-muted transition"
           >
             Date: {sortDir === "desc" ? "Newest First" : "Oldest First"}
@@ -326,10 +358,10 @@ function AdminPage() {
           </span>
         </div>
 
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && <p className="text-sm text-red-500">{error}</p>}
 
         {!rows ? (
-          <p className="text-muted-foreground">Loading bookings…</p>
+          <p className="text-muted-foreground">Loading bookings...</p>
         ) : filtered.length === 0 ? (
           <p className="text-muted-foreground">No bookings found.</p>
         ) : (
@@ -337,38 +369,45 @@ function AdminPage() {
             <table className="w-full text-sm">
               <thead className="bg-muted text-left">
                 <tr>
-                  {[
-                    "#",
-                    "Date",
-                    "Name",
-                    "Phone",
-                    "Email",
-                    "Course",
-                    "Notes",
-                    "Checked",
-                  ].map((h) => (
-                    <th
-                      key={h}
-                      className="px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider"
-                    >
-                      {h}
-                    </th>
-                  ))}
+                  <th className="px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                    #
+                  </th>
+                  <th className="px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                    Date
+                  </th>
+                  <th className="px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                    Phone
+                  </th>
+                  <th className="px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th className="px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                    Course
+                  </th>
+                  <th className="px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                    Notes
+                  </th>
+                  <th className="px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                    Checked
+                  </th>
                 </tr>
               </thead>
 
               <tbody className="divide-y divide-border">
-                {filtered.map((r, i) => (
+                {filtered.map((r, index) => (
                   <tr
                     key={r.id}
-                    className={`transition ${
+                    className={
                       r.checkedOut
-                        ? "bg-emerald-50/60 hover:bg-emerald-50"
-                        : "hover:bg-muted/40"
-                    }`}
+                        ? "bg-emerald-50/60 hover:bg-emerald-50 transition"
+                        : "hover:bg-muted/40 transition"
+                    }
                   >
                     <td className="px-4 py-3 text-muted-foreground text-xs">
-                      {i + 1}
+                      {index + 1}
                     </td>
 
                     <td className="px-4 py-3 whitespace-nowrap text-muted-foreground text-xs">
@@ -377,7 +416,9 @@ function AdminPage() {
                         : "—"}
                     </td>
 
-                    <td className="px-4 py-3 font-semibold">{r.name || "—"}</td>
+                    <td className="px-4 py-3 font-semibold">
+                      {r.name || "—"}
+                    </td>
 
                     <td className="px-4 py-3">{r.phone || "—"}</td>
 
@@ -393,7 +434,7 @@ function AdminPage() {
 
                     <td
                       className="px-4 py-3 max-w-xs truncate text-muted-foreground"
-                      title={r.message}
+                      title={r.message || ""}
                     >
                       {r.message || "—"}
                     </td>
@@ -408,6 +449,7 @@ function AdminPage() {
                           }
                           className="h-4 w-4 rounded border-border accent-emerald-600"
                         />
+
                         <span className="text-xs font-semibold text-muted-foreground">
                           {r.checkedOut ? "Done" : "Pending"}
                         </span>
