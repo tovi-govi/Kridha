@@ -1,5 +1,7 @@
-import { useState, useEffect, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import emailjs from "@emailjs/browser";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
 
 const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID || "";
 const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "";
@@ -15,6 +17,7 @@ const COURSES = [
   "AWS Cloud",
   "Data Analytics",
   "Digital Marketing",
+  "Cloud & DevOps",
 ];
 
 export function BookingSection() {
@@ -23,17 +26,12 @@ export function BookingSection() {
     email: "",
     phone: "",
     course: COURSES[0],
+    message: "",
   });
 
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) {
-      setError("EmailJS is not configured. Please set environment variables.");
-    }
-  }, []);
 
   const update = (field: keyof typeof form, value: string) => {
     setForm((prev) => ({
@@ -47,46 +45,54 @@ export function BookingSection() {
     setLoading(true);
     setError(null);
 
-    if (!form.name || !form.email || !form.phone || !form.course) {
-      setError("Please fill in all fields.");
-      setLoading(false);
-      return;
-    }
-
-    if (!EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) {
-      setError("EmailJS configuration is missing. Please contact support.");
+    if (!form.name || !form.phone || !form.course) {
+      setError("Please fill in all required fields.");
       setLoading(false);
       return;
     }
 
     try {
-      const response = await emailjs.send(
-        EMAILJS_SERVICE_ID,
-        EMAILJS_TEMPLATE_ID,
-        {
-          to_email: form.email,
-          user_name: form.name,
-          user_email: form.email,
-          user_phone: form.phone,
-          course_name: form.course,
-        }
-      );
+      await addDoc(collection(db, "bookings"), {
+        name: form.name,
+        email: form.email || "",
+        phone: form.phone,
+        course: form.course,
+        message: form.message || "",
+        checkedOut: false,
+        uid: auth.currentUser?.uid || null,
+        createdAt: serverTimestamp(),
+      });
 
-      console.log("Email sent successfully:", response);
+      if (EMAILJS_SERVICE_ID && EMAILJS_TEMPLATE_ID && EMAILJS_PUBLIC_KEY) {
+        await emailjs.send(
+          EMAILJS_SERVICE_ID,
+          EMAILJS_TEMPLATE_ID,
+          {
+            to_email: form.email,
+            user_name: form.name,
+            user_email: form.email,
+            user_phone: form.phone,
+            course_name: form.course,
+            message: form.message,
+          },
+          EMAILJS_PUBLIC_KEY
+        );
+      }
+
       setSubmitted(true);
+
       setForm({
         name: "",
         email: "",
         phone: "",
         course: COURSES[0],
+        message: "",
       });
 
       setTimeout(() => setSubmitted(false), 5000);
     } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to send email. Please try again.";
-      setError(errorMessage);
-      console.error("Email error:", err);
+      console.error("Booking error:", err);
+      setError(err instanceof Error ? err.message : "Failed to submit booking.");
     } finally {
       setLoading(false);
     }
@@ -100,21 +106,25 @@ export function BookingSection() {
             <span className="text-xs font-extrabold uppercase tracking-[0.22em] text-emerald-600">
               Free Career Demo
             </span>
+
             <h2 className="mt-3 text-3xl font-extrabold text-primary sm:text-4xl lg:text-5xl">
               Start your job-ready journey today
             </h2>
+
             <p className="mt-4 text-muted-foreground">
-              Fill in your details and our team will contact you for a free demo, course guidance,
-              and placement roadmap.
+              Fill in your details and our team will contact you for a free demo,
+              course guidance, and placement roadmap.
             </p>
 
             <div className="mt-6 space-y-3">
               <div className="flex items-center gap-2 text-sm font-semibold text-primary">
                 <span className="text-emerald-600">✅</span> EMI Available
               </div>
+
               <div className="flex items-center gap-2 text-sm font-semibold text-primary">
                 <span className="text-emerald-600">✅</span> Limited Seats
               </div>
+
               <div className="flex items-center gap-2 text-sm font-semibold text-primary">
                 <span className="text-emerald-600">✅</span> Placement Support
               </div>
@@ -122,11 +132,13 @@ export function BookingSection() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <h3 className="text-xl font-extrabold text-primary">Book Free Demo</h3>
+            <h3 className="text-xl font-extrabold text-primary">
+              Book Free Demo
+            </h3>
 
             {submitted && (
               <div className="rounded-lg bg-emerald-50 p-4 text-sm font-semibold text-emerald-700 border border-emerald-200">
-                ✅ Demo booked successfully! Check your email for confirmation.
+                ✅ Booking submitted successfully!
               </div>
             )}
 
@@ -137,7 +149,10 @@ export function BookingSection() {
             )}
 
             <div>
-              <label className="block text-sm font-semibold text-primary mb-2">Name</label>
+              <label className="block text-sm font-semibold text-primary mb-2">
+                Name
+              </label>
+
               <input
                 required
                 type="text"
@@ -149,9 +164,11 @@ export function BookingSection() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-primary mb-2">Email</label>
+              <label className="block text-sm font-semibold text-primary mb-2">
+                Email
+              </label>
+
               <input
-                required
                 type="email"
                 value={form.email}
                 onChange={(e) => update("email", e.target.value)}
@@ -161,7 +178,10 @@ export function BookingSection() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-primary mb-2">Phone</label>
+              <label className="block text-sm font-semibold text-primary mb-2">
+                Phone
+              </label>
+
               <input
                 required
                 type="tel"
@@ -173,7 +193,10 @@ export function BookingSection() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-primary mb-2">Course</label>
+              <label className="block text-sm font-semibold text-primary mb-2">
+                Course
+              </label>
+
               <select
                 required
                 value={form.course}
@@ -188,12 +211,26 @@ export function BookingSection() {
               </select>
             </div>
 
+            <div>
+              <label className="block text-sm font-semibold text-primary mb-2">
+                Notes
+              </label>
+
+              <textarea
+                value={form.message}
+                onChange={(e) => update("message", e.target.value)}
+                placeholder="Any message or doubt?"
+                rows={3}
+                className="w-full rounded-lg border border-border bg-background px-4 py-3 text-primary placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
             <button
               type="submit"
               disabled={loading}
               className="w-full rounded-full bg-primary px-6 py-3 font-extrabold text-white transition hover:bg-primary/90 disabled:opacity-50"
             >
-              {loading ? "Sending..." : "Get Free Demo"}
+              {loading ? "Submitting..." : "Get Free Demo"}
             </button>
           </form>
         </div>
