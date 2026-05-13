@@ -51,9 +51,21 @@ export function Hero() {
                     </div>
                   ))}
                   <div className="rounded-lg sm:rounded-2xl bg-primary p-3 sm:p-4 text-white">
-                    <div className="flex items-center gap-2 text-xs sm:text-sm font-bold"><PlayCircle className="h-3 w-3 sm:h-4 sm:w-4 text-accent flex-shrink-0" /> Demo class available</div>
-                    <div className="mt-2 text-xl sm:text-3xl font-extrabold text-accent">₹{site.feeINR.toLocaleString("en-IN")}</div>
-                    <div className="text-[0.65rem] sm:text-xs text-white/70">Limited seats · EMI available</div>
+                    <div className="flex items-center gap-2 text-xs sm:text-sm font-bold">
+                      <PlayCircle className="h-3 w-3 sm:h-4 sm:w-4 text-accent flex-shrink-0" /> Demo class available
+                    </div>
+                    {/* Original price with strikethrough */}
+                    <div className="mt-2 text-xs sm:text-sm text-white/50 line-through">
+                      ₹{site.originalFeeINR.toLocaleString("en-IN")}
+                    </div>
+                    {/* Offer price */}
+                    <div className="text-xl sm:text-3xl font-extrabold text-accent">
+                      ₹{site.feeINR.toLocaleString("en-IN")}
+                    </div>
+                    <div className="mt-0.5 inline-flex items-center gap-1 rounded-full bg-accent/20 px-2 py-0.5 text-[0.6rem] sm:text-[0.65rem] font-extrabold text-accent">
+                      🎉 Limited Offer
+                    </div>
+                    <div className="mt-1 text-[0.65rem] sm:text-xs text-white/70">Limited seats · EMI available</div>
                   </div>
                 </div>
               </div>

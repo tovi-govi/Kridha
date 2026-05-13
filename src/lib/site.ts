@@ -5,7 +5,7 @@ export const site = {
   email: "tarsieriscool@gmail.com",
   phoneDisplay: "+91 8309816381",
   originalFeeINR: 50000,
-  feeINR: 14999,
+  feeINR: 34999,
   batch: "2026",
 };
 
