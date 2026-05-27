@@ -33,11 +33,7 @@ function PlacementProcessPage() {
           className="relative overflow-hidden bg-primary py-12 text-white lg:py-16"
           style={{ colorScheme: "normal" }}
         >
-          <motion.div
-            className="pointer-events-none absolute right-10 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-emerald-300/15 blur-3xl"
-            animate={{ scale: [1, 1.15, 1], opacity: [0.25, 0.45, 0.25] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          />
+          <div className="pointer-events-none absolute right-10 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-emerald-300/15 blur-3xl" />
           <motion.div
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}

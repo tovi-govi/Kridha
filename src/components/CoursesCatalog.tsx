@@ -129,16 +129,9 @@ export function CoursesCatalog() {
                     className="absolute inset-0 opacity-5 group-hover:opacity-10 transition"
                     style={{ backgroundColor: course.color }}
                   />
-                  <motion.div
+                  <div
                     className="absolute -right-16 -top-16 h-32 w-32 rounded-full opacity-0 blur-2xl transition group-hover:opacity-25"
                     style={{ backgroundColor: course.color }}
-                    animate={{ scale: [1, 1.12, 1] }}
-                    transition={{
-                      duration: 4,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                      delay: idx * 0.2,
-                    }}
                   />
 
                   <div

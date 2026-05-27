@@ -58,11 +58,7 @@ export function PlacementProcess() {
       className="relative overflow-hidden bg-slate-950 py-12 sm:py-16 lg:py-20"
       style={{ colorScheme: "normal" }}
     >
-      <motion.div
-        className="pointer-events-none absolute left-1/2 top-24 h-80 w-80 -translate-x-1/2 rounded-full bg-emerald-400/10 blur-3xl"
-        animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.48, 0.3] }}
-        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-      />
+      <div className="pointer-events-none absolute left-1/2 top-24 h-80 w-80 -translate-x-1/2 rounded-full bg-emerald-400/10 blur-3xl" />
 
       <div className="relative mx-auto max-w-7xl px-3 sm:px-5 lg:px-8">
         <Reveal className="mb-8 max-w-2xl">
@@ -84,21 +80,12 @@ export function PlacementProcess() {
             return (
               <Reveal key={step.number} delay={idx * 0.065} y={30}>
                 <motion.div
-                  whileHover={{ y: -10, rotateX: 2, rotateY: -2 }}
+                  whileHover={{ y: -8 }}
                   transition={{ type: "spring", stiffness: 240, damping: 20 }}
                   className="group relative overflow-hidden rounded-2xl border border-slate-700/40 bg-slate-900/95 p-4 text-center shadow-[0_20px_60px_rgba(15,23,42,0.25)] sm:rounded-[32px] sm:p-6"
                 >
                   <div className="absolute inset-x-4 top-0 h-1 rounded-full bg-gradient-to-r from-emerald-400 via-cyan-400 to-sky-500 opacity-30 sm:inset-x-6" />
-                  <motion.div
-                    className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-emerald-400/10 blur-2xl"
-                    animate={{ scale: [1, 1.16, 1] }}
-                    transition={{
-                      duration: 4,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                      delay: idx * 0.2,
-                    }}
-                  />
+                  <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-emerald-400/10 blur-2xl" />
 
                   <div className="relative z-10 flex flex-col items-center justify-center gap-3 pt-4 sm:gap-5 sm:pt-6">
                     <div

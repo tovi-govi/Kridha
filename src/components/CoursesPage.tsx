@@ -10,7 +10,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { Reveal, softHover } from "@/components/Motion";
+import { Reveal } from "@/components/Motion";
 
 const courses = [
   {
@@ -153,11 +153,7 @@ export function CoursesPage() {
         className="relative overflow-hidden bg-hero-gradient px-5 py-12 text-center"
         style={{ colorScheme: "normal" }}
       >
-        <motion.div
-          className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-400/20 blur-3xl"
-          animate={{ scale: [1, 1.16, 1], opacity: [0.28, 0.42, 0.28] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-        />
+        <div className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-400/20 blur-3xl" />
         <div className="relative">
           <h1 className="text-4xl font-extrabold text-white lg:text-5xl">Our Courses</h1>
           <p className="mt-3 text-lg text-white/70">Click a track to explore the full details</p>
@@ -171,10 +167,7 @@ export function CoursesPage() {
 
           return (
             <Reveal key={c.slug} delay={idx * 0.055} y={24}>
-              <motion.div
-                whileHover={softHover}
-                className="overflow-hidden rounded-2xl shadow-lg transition-shadow duration-300 hover:shadow-xl"
-              >
+              <div className="overflow-hidden rounded-2xl shadow-lg transition-shadow duration-300 hover:shadow-xl">
                 <button
                   onClick={() => setActive(isActive ? null : c.slug)}
                   className="w-full px-6 py-5 text-left transition-all duration-300"
@@ -182,13 +175,9 @@ export function CoursesPage() {
                 >
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex min-w-0 items-center gap-4">
-                      <motion.div
-                        className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/25"
-                        animate={isActive ? { rotate: 360 } : { rotate: 0 }}
-                        transition={{ duration: 0.5 }}
-                      >
+                      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/25">
                         <Icon className="h-5 w-5 text-white" />
-                      </motion.div>
+                      </div>
                       <div className="min-w-0">
                         <div className="text-lg font-extrabold text-white">{c.title}</div>
                         <div className="text-sm text-white/80">{c.subtitle}</div>
@@ -215,128 +204,121 @@ export function CoursesPage() {
                   </div>
                 </button>
 
-                <motion.div
-                  initial={false}
-                  animate={{ height: isActive ? "auto" : 0, opacity: isActive ? 1 : 0 }}
-                  transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                  className="overflow-hidden"
+                <div
+                  className={`grid overflow-hidden transition-[grid-template-rows,opacity] duration-300 ease-out ${
+                    isActive ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                  }`}
                 >
-                  <div
-                    className="border-t-4 bg-background p-6 lg:p-8"
-                    style={{ borderTopColor: c.color }}
-                  >
-                    <div className="mb-5 flex flex-wrap gap-2 sm:hidden">
-                      <span
-                        className="rounded-full px-3 py-1.5 text-xs font-semibold text-white"
-                        style={{ backgroundColor: c.color }}
-                      >
-                        {c.duration}
-                      </span>
-                      <span
-                        className="rounded-full px-3 py-1.5 text-xs font-semibold text-white"
-                        style={{ backgroundColor: c.color }}
-                      >
-                        {c.fee}
-                      </span>
-                      <span
-                        className="rounded-full px-3 py-1.5 text-xs font-bold text-white"
-                        style={{ backgroundColor: c.color }}
-                      >
-                        {c.seats}
-                      </span>
-                    </div>
-
-                    <div className="grid gap-8 lg:grid-cols-3">
-                      <div>
-                        <h3
-                          className="mb-3 text-sm font-bold uppercase tracking-wider"
-                          style={{ color: c.color }}
+                  <div className="min-h-0 overflow-hidden">
+                    <div
+                      className="border-t-4 bg-background p-6 lg:p-8"
+                      style={{ borderTopColor: c.color }}
+                    >
+                      <div className="mb-5 flex flex-wrap gap-2 sm:hidden">
+                        <span
+                          className="rounded-full px-3 py-1.5 text-xs font-semibold text-white"
+                          style={{ backgroundColor: c.color }}
                         >
-                          Syllabus
-                        </h3>
-                        <div className="space-y-2">
-                          {c.syllabus.map((s, itemIdx) => (
-                            <motion.div
-                              key={s.module}
-                              initial={{ opacity: 0, x: -10 }}
-                              animate={isActive ? { opacity: 1, x: 0 } : { opacity: 0, x: -10 }}
-                              transition={{ delay: itemIdx * 0.04 }}
-                              className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm"
-                            >
-                              <div>
-                                <span className="font-semibold">{s.module}</span>
-                                <span className="text-muted-foreground"> - {s.topic}</span>
-                              </div>
-                              <span className="ml-2 shrink-0 text-xs text-muted-foreground">
-                                {s.weeks}
-                              </span>
-                            </motion.div>
-                          ))}
-                        </div>
+                          {c.duration}
+                        </span>
+                        <span
+                          className="rounded-full px-3 py-1.5 text-xs font-semibold text-white"
+                          style={{ backgroundColor: c.color }}
+                        >
+                          {c.fee}
+                        </span>
+                        <span
+                          className="rounded-full px-3 py-1.5 text-xs font-bold text-white"
+                          style={{ backgroundColor: c.color }}
+                        >
+                          {c.seats}
+                        </span>
                       </div>
 
-                      <div>
-                        <h3
-                          className="mb-3 text-sm font-bold uppercase tracking-wider"
-                          style={{ color: c.color }}
-                        >
-                          Projects You'll Build
-                        </h3>
-                        <div className="flex flex-wrap gap-2">
-                          {c.projects.map((p, projectIdx) => (
-                            <motion.span
-                              key={p}
-                              initial={{ opacity: 0, scale: 0.9 }}
-                              animate={
-                                isActive ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }
-                              }
-                              transition={{ delay: projectIdx * 0.045 }}
-                              className="rounded-full px-3 py-1 text-xs font-semibold text-white"
-                              style={{ backgroundColor: c.color }}
-                            >
-                              {p}
-                            </motion.span>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="space-y-6">
+                      <div className="grid gap-8 lg:grid-cols-3">
                         <div>
                           <h3
                             className="mb-3 text-sm font-bold uppercase tracking-wider"
                             style={{ color: c.color }}
                           >
-                            What You'll Achieve
+                            Syllabus
                           </h3>
-                          <ul className="space-y-2">
-                            {c.outcomes.map((o) => (
-                              <li key={o} className="flex items-center gap-2 text-sm">
-                                <ArrowRight
-                                  className="h-3.5 w-3.5 shrink-0"
-                                  style={{ color: c.color }}
-                                />
-                                {o}
-                              </li>
+                          <div className="space-y-2">
+                            {c.syllabus.map((s) => (
+                              <div
+                                key={s.module}
+                                className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm"
+                              >
+                                <div>
+                                  <span className="font-semibold">{s.module}</span>
+                                  <span className="text-muted-foreground"> - {s.topic}</span>
+                                </div>
+                                <span className="ml-2 shrink-0 text-xs text-muted-foreground">
+                                  {s.weeks}
+                                </span>
+                              </div>
                             ))}
-                          </ul>
+                          </div>
                         </div>
+
                         <div>
-                          <div className="mb-2 text-sm text-muted-foreground">{c.batch}</div>
-                          <motion.a
-                            href="/#book"
-                            whileHover={{ scale: 1.03, y: -1 }}
-                            whileTap={{ scale: 0.97 }}
-                            className="inline-flex w-full items-center justify-center gap-2 rounded-full py-3 font-bold text-white transition hover:opacity-90"
-                            style={{ backgroundColor: c.color }}
+                          <h3
+                            className="mb-3 text-sm font-bold uppercase tracking-wider"
+                            style={{ color: c.color }}
                           >
-                            Book Free Demo <ArrowRight className="h-4 w-4" />
-                          </motion.a>
+                            Projects You'll Build
+                          </h3>
+                          <div className="flex flex-wrap gap-2">
+                            {c.projects.map((p) => (
+                              <span
+                                key={p}
+                                className="rounded-full px-3 py-1 text-xs font-semibold text-white"
+                                style={{ backgroundColor: c.color }}
+                              >
+                                {p}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="space-y-6">
+                          <div>
+                            <h3
+                              className="mb-3 text-sm font-bold uppercase tracking-wider"
+                              style={{ color: c.color }}
+                            >
+                              What You'll Achieve
+                            </h3>
+                            <ul className="space-y-2">
+                              {c.outcomes.map((o) => (
+                                <li key={o} className="flex items-center gap-2 text-sm">
+                                  <ArrowRight
+                                    className="h-3.5 w-3.5 shrink-0"
+                                    style={{ color: c.color }}
+                                  />
+                                  {o}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                          <div>
+                            <div className="mb-2 text-sm text-muted-foreground">{c.batch}</div>
+                            <motion.a
+                              href="/#book"
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              className="inline-flex w-full items-center justify-center gap-2 rounded-full py-3 font-bold text-white transition hover:opacity-90"
+                              style={{ backgroundColor: c.color }}
+                            >
+                              Book Free Demo <ArrowRight className="h-4 w-4" />
+                            </motion.a>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </motion.div>
-              </motion.div>
+                </div>
+              </div>
             </Reveal>
           );
         })}

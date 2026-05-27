@@ -40,8 +40,8 @@ function AnimatedHeroTitle() {
           key={part}
           className="mr-[0.18em] inline-block"
           variants={{
-            hidden: { opacity: 0, y: 18, filter: "blur(8px)" },
-            show: { opacity: 1, y: 0, filter: "blur(0px)" },
+            hidden: { opacity: 0, y: 18 },
+            show: { opacity: 1, y: 0 },
           }}
           transition={{ type: "spring", stiffness: 420, damping: 30 }}
         >
@@ -54,20 +54,8 @@ function AnimatedHeroTitle() {
           hidden: { opacity: 0, scale: 0.76, y: 16 },
           show: { opacity: 1, scale: 1, y: 0 },
         }}
-        animate={
-          reduceMotion
-            ? undefined
-            : {
-                textShadow: [
-                  "0 0 0 rgba(0,230,118,0)",
-                  "0 0 26px rgba(0,230,118,0.5)",
-                  "0 0 0 rgba(0,230,118,0)",
-                ],
-              }
-        }
         transition={{
           scale: { type: "spring", stiffness: 380, damping: 18, delay: 0.42 },
-          textShadow: { duration: 2.4, repeat: Infinity, repeatDelay: 2.6 },
         }}
       >
         6 Months
@@ -100,19 +88,9 @@ function AnimatedCTA() {
 
 function LiveBadge() {
   return (
-    <motion.span
-      className="relative flex-shrink-0 rounded-full bg-accent/20 px-2 py-0.5 text-[0.6rem] font-extrabold text-emerald-700 sm:px-3 sm:py-1 sm:text-xs"
-      animate={{ scale: [1, 1.04, 1] }}
-      transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-    >
-      <motion.span
-        className="absolute inset-0 rounded-full border border-accent/40"
-        animate={{ opacity: [0.8, 0], scale: [1, 1.55] }}
-        transition={{ duration: 1.8, repeat: Infinity, ease: "easeOut" }}
-        aria-hidden="true"
-      />
+    <span className="relative flex-shrink-0 rounded-full bg-accent/20 px-2 py-0.5 text-[0.6rem] font-extrabold text-emerald-700 sm:px-3 sm:py-1 sm:text-xs">
       LIVE
-    </motion.span>
+    </span>
   );
 }
 
@@ -315,22 +293,18 @@ function ScratchCardPrice({ onReveal }: { onReveal?: () => void }) {
           aria-label="Scratch to reveal discounted price"
         />
         {!isRevealed && (
-          <motion.div
+          <div
             className="pointer-events-none absolute inset-0 z-20 grid place-items-center rounded-lg"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 1, 1, 0] }}
-            transition={{ duration: 2.2, delay: 0.9, repeat: Infinity, repeatDelay: 1.4 }}
             aria-hidden="true"
           >
-            <motion.span
-              className="h-7 w-16 rounded-full border border-white/45 bg-white/20 shadow-[0_0_18px_rgba(255,255,255,0.28)]"
-              animate={{ x: [-28, 28], rotate: [-8, 7] }}
-              transition={{ duration: 1.1, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
-            />
-          </motion.div>
+            <span className="h-7 w-16 rounded-full border border-white/45 bg-white/20 shadow-[0_0_18px_rgba(255,255,255,0.28)]" />
+          </div>
         )}
         {isRevealed && (
-          <div className="pointer-events-none absolute inset-0 z-20 grid place-items-center" aria-hidden="true">
+          <div
+            className="pointer-events-none absolute inset-0 z-20 grid place-items-center"
+            aria-hidden="true"
+          >
             {REVEAL_PARTICLES.map((particle, index) => (
               <motion.span
                 key={`${particle.x}-${particle.y}-${index}`}
@@ -408,22 +382,13 @@ export function Hero() {
   const reduceMotion = useReducedMotion();
 
   return (
-    <section className="relative overflow-hidden bg-primary text-white" style={{ colorScheme: "normal" }}>
-      <motion.div
-        className="absolute inset-0 opacity-15 [background-image:radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] [background-size:30px_30px]"
-        animate={reduceMotion ? undefined : { backgroundPosition: ["0px 0px", "30px 30px"] }}
-        transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
-      />
-      <motion.div
-        className="absolute -right-20 top-24 h-48 w-48 rounded-full bg-accent/25 blur-3xl sm:h-72 sm:w-72"
-        animate={reduceMotion ? undefined : { opacity: [0.18, 0.32, 0.18], scale: [1, 1.08, 1] }}
-        transition={{ duration: 5.8, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="absolute -left-20 bottom-0 h-56 w-56 rounded-full bg-emerald-400/10 blur-3xl sm:-left-24 sm:h-80 sm:w-80"
-        animate={reduceMotion ? undefined : { opacity: [0.08, 0.18, 0.08], scale: [1, 1.12, 1] }}
-        transition={{ duration: 7.2, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
-      />
+    <section
+      className="relative overflow-hidden bg-primary text-white"
+      style={{ colorScheme: "normal" }}
+    >
+      <div className="absolute inset-0 opacity-15 [background-image:radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] [background-size:30px_30px]" />
+      <div className="absolute -right-20 top-24 h-48 w-48 rounded-full bg-accent/25 blur-3xl sm:h-72 sm:w-72" />
+      <div className="absolute -left-20 bottom-0 h-56 w-56 rounded-full bg-emerald-400/10 blur-3xl sm:-left-24 sm:h-80 sm:w-80" />
 
       <div className="relative mx-auto grid max-w-7xl gap-6 px-3 py-12 sm:gap-10 sm:px-5 md:py-20 lg:grid-cols-[1fr_0.9fr] lg:items-center lg:px-8 lg:py-24">
         <motion.div
@@ -454,7 +419,8 @@ export function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, delay: 0.58 }}
           >
-            Practical training, real-time projects, interview preparation and career support from Kridha Software Solutions Private Limited.
+            Practical training, real-time projects, interview preparation and career support from
+            Kridha Software Solutions Private Limited.
           </motion.p>
           <motion.div
             className="mt-6 flex flex-col gap-2 sm:mt-8 sm:flex-row sm:gap-3"
@@ -471,12 +437,12 @@ export function Hero() {
           <motion.div
             className="relative rounded-2xl border border-white/15 bg-white/10 p-4 shadow-glow backdrop-blur sm:rounded-[2rem] sm:p-5"
             initial={reduceMotion ? false : { opacity: 0, y: 22, rotate: -1.5 }}
-            animate={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 1, y: [0, -8, 0], rotate: [0, 0.6, 0] }}
+            animate={{ opacity: 1, y: 0, rotate: 0 }}
             whileHover={reduceMotion ? undefined : { rotate: -1.2, scale: 1.012 }}
             transition={{
               opacity: { duration: 0.6, delay: 0.35 },
-              y: { duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.9 },
-              rotate: { duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.9 },
+              y: { duration: 0.6, delay: 0.35, ease: [0.16, 1, 0.3, 1] },
+              rotate: { duration: 0.6, delay: 0.35, ease: [0.16, 1, 0.3, 1] },
               scale: { type: "spring", stiffness: 300, damping: 24 },
             }}
           >
@@ -489,15 +455,15 @@ export function Hero() {
               </div>
               <div className="mt-4 grid gap-3 sm:mt-5 sm:grid-cols-[0.9fr_1.1fr] sm:gap-4">
                 <div className="rounded-xl bg-primary p-3 text-center text-white sm:rounded-2xl sm:p-5">
-                  <motion.div
-                    className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-accent text-4xl sm:h-24 sm:w-24 sm:text-5xl"
-                    animate={reduceMotion ? undefined : { y: [0, -5, 0], boxShadow: ["0 0 0 rgba(0,230,118,0)", "0 0 28px rgba(0,230,118,0.28)", "0 0 0 rgba(0,230,118,0)"] }}
-                    transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
-                  >
+                  <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-accent text-4xl shadow-[0_0_28px_rgba(0,230,118,0.18)] sm:h-24 sm:w-24 sm:text-5xl">
                     🎓
-                  </motion.div>
-                  <p className="mt-3 text-xs font-bold leading-tight sm:mt-4 sm:text-sm">Student + Laptop Visual</p>
-                  <p className="mt-1 text-[0.65rem] text-white/70 sm:text-xs">Mobile-first, fast.</p>
+                  </div>
+                  <p className="mt-3 text-xs font-bold leading-tight sm:mt-4 sm:text-sm">
+                    Student + Laptop Visual
+                  </p>
+                  <p className="mt-1 text-[0.65rem] text-white/70 sm:text-xs">
+                    Mobile-first, fast.
+                  </p>
                 </div>
                 <div className="space-y-2 sm:space-y-3">
                   {FEATURE_ITEMS.map((x, index) => (
@@ -505,13 +471,16 @@ export function Hero() {
                   ))}
                   <div className="rounded-lg bg-primary p-3 text-white sm:rounded-2xl sm:p-4">
                     <div className="flex items-center gap-2 text-xs font-bold sm:text-sm">
-                      <PlayCircle className="h-3 w-3 flex-shrink-0 text-accent sm:h-4 sm:w-4" /> Demo class available
+                      <PlayCircle className="h-3 w-3 flex-shrink-0 text-accent sm:h-4 sm:w-4" />{" "}
+                      Demo class available
                     </div>
                     <PriceReveal />
                     <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-accent/20 px-2 py-0.5 text-[0.6rem] font-extrabold text-accent sm:text-[0.65rem]">
                       🎉 Limited Offer
                     </div>
-                    <div className="mt-1 text-[0.65rem] text-white/70 sm:text-xs">Limited seats · EMI available</div>
+                    <div className="mt-1 text-[0.65rem] text-white/70 sm:text-xs">
+                      Limited seats · EMI available
+                    </div>
                   </div>
                 </div>
               </div>
