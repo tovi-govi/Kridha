@@ -232,7 +232,7 @@ function AdminPage() {
   const [sortDir, setSortDir] = useState<"desc" | "asc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const isAdmin = !!user?.email && ADMIN_EMAILS.includes(user.email);
+  const isAdmin = !!user?.email && ADMIN_EMAILS.includes(user.email.toLowerCase());
 
   const loadBookings = useCallback(async () => {
     if (!isAdmin) return;
