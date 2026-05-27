@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import type { ElementType } from "react";
 import { Code, Layers, BrainCircuit, Cloud, ShieldCheck, Rocket } from "lucide-react";
+import { motion } from "framer-motion";
+import { Reveal, softHover } from "@/components/Motion";
 
 type Course = {
   number: number;
@@ -60,7 +62,12 @@ const courses: Course[] = [
     subtitle: "Ship and scale",
     color: "#EA580C",
     icon: Cloud,
-    topics: ["Cloud (AWS / Azure Basics)", "DevOps Tools", "CI/CD Pipelines", "Docker & Kubernetes"],
+    topics: [
+      "Cloud (AWS / Azure Basics)",
+      "DevOps Tools",
+      "CI/CD Pipelines",
+      "Docker & Kubernetes",
+    ],
     cta: "Deploy & Scale Applications",
     isNew: false,
   },
@@ -95,7 +102,7 @@ export function CoursesCatalog() {
       className="py-16 lg:py-20 bg-gradient-to-b from-background to-secondary/20"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-5 lg:px-8">
-        <div className="mx-auto max-w-2xl text-center mb-12">
+        <Reveal className="mx-auto max-w-2xl text-center mb-12">
           <span className="text-xs font-extrabold uppercase tracking-[0.22em] text-emerald-600">
             Our Courses
           </span>
@@ -107,67 +114,80 @@ export function CoursesCatalog() {
           <p className="mt-4 text-muted-foreground">
             Choose from our carefully designed courses to build your career in tech
           </p>
-        </div>
+        </Reveal>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {courses.map((course) => (
-            <Link
-              key={course.slug}
-              to="/courses"
-              className="group relative overflow-hidden rounded-2xl border border-border/50 bg-card p-6 shadow-soft transition hover:shadow-glow hover:-translate-y-1 cursor-pointer"
-            >
-              <div
-                className="absolute inset-0 opacity-5 group-hover:opacity-10 transition"
-                style={{ backgroundColor: course.color }}
-              />
-
-              <div
-                className="absolute top-4 right-4 h-10 w-10 rounded-full flex items-center justify-center font-extrabold text-white text-lg"
-                style={{ backgroundColor: course.color }}
-              >
-                {course.number}
-              </div>
-
-              {course.isNew && (
-                <div
-                  className="absolute top-4 left-4 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider text-white"
-                  style={{ backgroundColor: course.color }}
+          {courses.map((course, idx) => (
+            <Reveal key={course.slug} delay={idx * 0.055} y={28} className="h-full">
+              <motion.div whileHover={softHover} whileTap={{ scale: 0.985 }} className="h-full">
+                <Link
+                  key={course.slug}
+                  to="/courses"
+                  className="group relative block h-full overflow-hidden rounded-2xl border border-border/50 bg-card p-6 shadow-soft transition hover:shadow-glow cursor-pointer"
                 >
-                  New Course
-                </div>
-              )}
+                  <div
+                    className="absolute inset-0 opacity-5 group-hover:opacity-10 transition"
+                    style={{ backgroundColor: course.color }}
+                  />
+                  <motion.div
+                    className="absolute -right-16 -top-16 h-32 w-32 rounded-full opacity-0 blur-2xl transition group-hover:opacity-25"
+                    style={{ backgroundColor: course.color }}
+                    animate={{ scale: [1, 1.12, 1] }}
+                    transition={{
+                      duration: 4,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: idx * 0.2,
+                    }}
+                  />
 
-              <div
-                className="inline-flex h-14 w-14 items-center justify-center rounded-xl text-white mb-4"
-                style={{ backgroundColor: course.color }}
-              >
-                <course.icon className="h-7 w-7" />
-              </div>
-
-              <h3 className="mt-4 text-xl font-extrabold text-primary">
-                {course.title}
-              </h3>
-
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-1">
-                {course.subtitle}
-              </p>
-
-              <div className="mt-4 space-y-2">
-                {course.topics.map((topic, idx) => (
-                  <div key={idx} className="flex items-start gap-2 text-sm">
-                    <span className="text-emerald-600 font-bold mt-0.5">✓</span>
-                    <span className="text-muted-foreground">{topic}</span>
+                  <div
+                    className="absolute top-4 right-4 h-10 w-10 rounded-full flex items-center justify-center font-extrabold text-white text-lg"
+                    style={{ backgroundColor: course.color }}
+                  >
+                    {course.number}
                   </div>
-                ))}
-              </div>
 
-              <div
-                className="mt-6 w-full py-3 px-4 rounded-full text-center font-extrabold text-white transition group-hover:opacity-90 flex items-center justify-center gap-2"
-                style={{ backgroundColor: course.color }}
-              >
-                {course.cta}
-              </div>
-            </Link>
+                  {course.isNew && (
+                    <div
+                      className="absolute top-4 left-4 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider text-white"
+                      style={{ backgroundColor: course.color }}
+                    >
+                      New Course
+                    </div>
+                  )}
+
+                  <div
+                    className="inline-flex h-14 w-14 items-center justify-center rounded-xl text-white mb-4 transition group-hover:rotate-3"
+                    style={{ backgroundColor: course.color }}
+                  >
+                    <course.icon className="h-7 w-7" />
+                  </div>
+
+                  <h3 className="mt-4 text-xl font-extrabold text-primary">{course.title}</h3>
+
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-1">
+                    {course.subtitle}
+                  </p>
+
+                  <div className="mt-4 space-y-2">
+                    {course.topics.map((topic, idx) => (
+                      <div key={idx} className="flex items-start gap-2 text-sm">
+                        <span className="text-emerald-600 font-bold mt-0.5">✓</span>
+                        <span className="text-muted-foreground">{topic}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div
+                    className="mt-6 w-full py-3 px-4 rounded-full text-center font-extrabold text-white transition group-hover:opacity-90 flex items-center justify-center gap-2"
+                    style={{ backgroundColor: course.color }}
+                  >
+                    {course.cta}
+                  </div>
+                </Link>
+              </motion.div>
+            </Reveal>
           ))}
         </div>
       </div>
