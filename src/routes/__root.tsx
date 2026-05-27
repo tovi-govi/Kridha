@@ -1,7 +1,6 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { AuthProvider } from "@/lib/auth-context";
-import { ThemeProvider } from "@/lib/theme-provider";
 
 import "../styles.css";
 
@@ -60,11 +59,13 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 function RootComponent() {
+  useEffect(() => {
+    document.documentElement.classList.remove("light", "dark");
+  }, []);
+
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <Outlet />
-      </AuthProvider>
-    </ThemeProvider>
+    <AuthProvider>
+      <Outlet />
+    </AuthProvider>
   );
 }

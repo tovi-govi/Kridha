@@ -13,7 +13,7 @@ import {
 import * as XLSX from "xlsx";
 import { db, ADMIN_EMAILS } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
-import { useTheme } from "@/lib/theme-provider";
+import { ThemeProvider, useTheme } from "@/lib/theme-provider";
 import {
   Download,
   Users,
@@ -217,6 +217,14 @@ function exportToCSV(rows: Row[]) {
 }
 
 function AdminPage() {
+  return (
+    <ThemeProvider>
+      <AdminDashboard />
+    </ThemeProvider>
+  );
+}
+
+function AdminDashboard() {
   const { user, loading, signOut } = useAuth();
   const { theme, toggle } = useTheme();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -537,13 +545,17 @@ function AdminPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen grid place-items-center text-muted-foreground">Loading…</div>
+      <div className={`${theme} min-h-screen grid place-items-center bg-background text-muted-foreground`}>
+        Loading...
+      </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen grid place-items-center bg-background px-4">
+      <div
+        className={`${theme} min-h-screen grid place-items-center bg-background px-4 text-foreground`}
+      >
         <div className="max-w-sm w-full text-center bg-card border border-border rounded-2xl p-8 shadow-soft">
           <h1 className="text-xl font-bold">Admin access</h1>
 
@@ -562,7 +574,9 @@ function AdminPage() {
 
   if (!isAdmin || permissionDenied) {
     return (
-      <div className="min-h-screen grid place-items-center bg-background px-4">
+      <div
+        className={`${theme} min-h-screen grid place-items-center bg-background px-4 text-foreground`}
+      >
         <div className="max-w-sm w-full text-center bg-card border border-border rounded-2xl p-8 shadow-soft">
           <h1 className="text-xl font-bold">Not authorised</h1>
 
@@ -586,7 +600,7 @@ function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className={`${theme} min-h-screen bg-background text-foreground`}>
       <header className="sticky top-0 z-30 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/85">
         <div className="mx-auto flex min-h-16 max-w-7xl flex-col gap-3 px-5 py-3 lg:h-16 lg:flex-row lg:items-center lg:justify-between lg:px-8 lg:py-0">
           <div className="flex flex-wrap items-center gap-2 lg:gap-3">

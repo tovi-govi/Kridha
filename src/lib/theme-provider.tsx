@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
 type Theme = "light" | "dark";
+const DEFAULT_STORAGE_KEY = "admin-theme";
 
 const ThemeContext = createContext<{
   theme: Theme;
@@ -10,22 +11,33 @@ const ThemeContext = createContext<{
   toggle: () => {},
 });
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
+function getStoredTheme(storageKey: string): Theme | null {
+  if (typeof window === "undefined") return null;
+
+  const storedTheme = localStorage.getItem(storageKey);
+
+  return storedTheme === "light" || storedTheme === "dark" ? storedTheme : null;
+}
+
+export function ThemeProvider({
+  children,
+  storageKey = DEFAULT_STORAGE_KEY,
+}: {
+  children: ReactNode;
+  storageKey?: string;
+}) {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window === "undefined") return "light";
 
     return (
-      (localStorage.getItem("theme") as Theme) ||
+      getStoredTheme(storageKey) ||
       (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
     );
   });
 
   useEffect(() => {
-    const root = document.documentElement;
-    root.classList.remove("light", "dark");
-    root.classList.add(theme);
-    localStorage.setItem("theme", theme);
-  }, [theme]);
+    localStorage.setItem(storageKey, theme);
+  }, [storageKey, theme]);
 
   return (
     <ThemeContext.Provider
