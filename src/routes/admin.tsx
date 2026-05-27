@@ -48,6 +48,8 @@ type ImportedContact = Pick<Row, "name" | "email" | "phone">;
 const IMPORT_BATCH_SIZE = 100;
 const CLEAR_BATCH_SIZE = 500;
 const PAGE_SIZE = 100;
+const PERMISSION_DENIED_MESSAGE =
+  "You are not authorised to manage bookings. Ask the site owner to add this email as an admin in both Vercel and Firebase.";
 
 const IMPORT_ALIASES = {
   name: ["name", "fullname", "studentname", "customername"],
@@ -133,6 +135,14 @@ function waitForNextPaint() {
   });
 }
 
+function isPermissionDeniedError(err: unknown) {
+  if (typeof err === "object" && err && "code" in err && err.code === "permission-denied") {
+    return true;
+  }
+
+  return err instanceof Error && err.message.toLowerCase().includes("permission");
+}
+
 function getImportedCell(row: Record<string, unknown>, field: keyof ImportedContact) {
   for (const [key, value] of Object.entries(row)) {
     const normalizedKey = normalizeColumnName(key);
@@ -209,6 +219,7 @@ function AdminPage() {
 
   const [rows, setRows] = useState<Row[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [permissionDenied, setPermissionDenied] = useState(false);
   const [importMessage, setImportMessage] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
   const [importProgress, setImportProgress] = useState<{
@@ -238,6 +249,7 @@ function AdminPage() {
     if (!isAdmin) return;
 
     setError(null);
+    setPermissionDenied(false);
 
     try {
       const snap = await getDocs(query(collection(db, "bookings"), orderBy("createdAt", "desc")));
@@ -249,6 +261,13 @@ function AdminPage() {
 
       setRows(bookings);
     } catch (err: unknown) {
+      if (isPermissionDeniedError(err)) {
+        setPermissionDenied(true);
+        setError(PERMISSION_DENIED_MESSAGE);
+        setRows([]);
+        return;
+      }
+
       setError(err instanceof Error ? err.message : "Failed to load bookings");
       setRows([]);
     }
@@ -537,16 +556,19 @@ function AdminPage() {
     );
   }
 
-  if (!isAdmin) {
+  if (!isAdmin || permissionDenied) {
     return (
       <div className="min-h-screen grid place-items-center bg-background px-4">
         <div className="max-w-sm w-full text-center bg-card border border-border rounded-2xl p-8">
           <h1 className="text-xl font-bold">Not authorised</h1>
 
           <p className="mt-2 text-sm text-muted-foreground">
-            Signed in as {user.email}. Add this email to <code>ADMIN_EMAILS</code> in{" "}
-            <code>src/lib/firebase.ts</code>.
+            {permissionDenied
+              ? PERMISSION_DENIED_MESSAGE
+              : "This signed-in email is not on the admin list."}
           </p>
+
+          <p className="mt-2 text-xs text-muted-foreground">{user.email}</p>
 
           <button
             onClick={signOut}

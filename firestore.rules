@@ -1,0 +1,52 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function adminEmails() {
+      return [
+        "tarsieriscool@gmail.com",
+        "challamalllakshmi@gmail.com",
+        "vinayreddyvicky1212@gmail.com"
+      ];
+    }
+
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email != null
+        && request.auth.token.email.lower() in adminEmails();
+    }
+
+    function validBookingCreate() {
+      return request.resource.data.keys().hasOnly([
+          "name",
+          "email",
+          "phone",
+          "course",
+          "message",
+          "checkedOut",
+          "uid",
+          "createdAt"
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.email is string
+        && request.resource.data.phone is string
+        && request.resource.data.course is string
+        && request.resource.data.message is string
+        && request.resource.data.checkedOut == false
+        && (
+          request.resource.data.uid == null
+          || request.resource.data.uid is string
+        )
+        && request.resource.data.createdAt == request.time;
+    }
+
+    match /bookings/{bookingId} {
+      allow create: if isAdmin() || validBookingCreate();
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
