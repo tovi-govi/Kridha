@@ -207,7 +207,7 @@ function getScratchedRatio(canvas: HTMLCanvasElement) {
   return cleared / (pixels.length / 4);
 }
 
-function ScratchCardPrice() {
+function ScratchCardPrice({ onReveal }: { onReveal?: () => void }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const lastPointRef = useRef<{ x: number; y: number } | null>(null);
   const scratchCountRef = useRef(0);
@@ -247,9 +247,10 @@ function ScratchCardPrice() {
 
       if (scratchCountRef.current % 7 === 0 && getScratchedRatio(canvas) > REVEAL_THRESHOLD) {
         setIsRevealed(true);
+        onReveal?.();
       }
     },
-    [isRevealed],
+    [isRevealed, onReveal],
   );
 
   useEffect(() => {
@@ -348,6 +349,7 @@ function ScratchCardPrice() {
 
 function PriceReveal() {
   const reduceMotion = useReducedMotion();
+  const [isDiscountRevealed, setIsDiscountRevealed] = useState(false);
   const originalPrice = `₹${site.originalFeeINR.toLocaleString("en-IN")}`;
   const savings = site.originalFeeINR - site.feeINR;
 
@@ -385,17 +387,19 @@ function PriceReveal() {
             aria-hidden="true"
           />
         </span>
-        <motion.span
-          className="rounded-full border border-accent/20 bg-accent/10 px-2 py-0.5 text-[0.58rem] font-extrabold text-accent shadow-[0_0_18px_rgba(0,230,118,0.2)] sm:text-[0.65rem]"
-          initial={{ opacity: 0, scale: 0.82, y: 2 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ type: "spring", stiffness: 520, damping: 24, delay: 0.8 }}
-        >
-          Save ₹{savings.toLocaleString("en-IN")}
-        </motion.span>
+        {isDiscountRevealed && (
+          <motion.span
+            className="rounded-full border border-accent/20 bg-accent/10 px-2 py-0.5 text-[0.58rem] font-extrabold text-accent shadow-[0_0_18px_rgba(0,230,118,0.2)] sm:text-[0.65rem]"
+            initial={{ opacity: 0, scale: 0.82, y: 2 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ type: "spring", stiffness: 520, damping: 24 }}
+          >
+            Save ₹{savings.toLocaleString("en-IN")}
+          </motion.span>
+        )}
       </motion.div>
 
-      <ScratchCardPrice />
+      <ScratchCardPrice onReveal={() => setIsDiscountRevealed(true)} />
     </>
   );
 }
