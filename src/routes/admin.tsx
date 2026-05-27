@@ -13,6 +13,7 @@ import {
 import * as XLSX from "xlsx";
 import { db, ADMIN_EMAILS } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
+import { useTheme } from "@/lib/theme-provider";
 import {
   Download,
   Users,
@@ -24,6 +25,8 @@ import {
   Phone,
   ChevronLeft,
   ChevronRight,
+  Moon,
+  Sun,
 } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
@@ -215,6 +218,7 @@ function exportToCSV(rows: Row[]) {
 
 function AdminPage() {
   const { user, loading, signOut } = useAuth();
+  const { theme, toggle } = useTheme();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [rows, setRows] = useState<Row[] | null>(null);
@@ -540,7 +544,7 @@ function AdminPage() {
   if (!user) {
     return (
       <div className="min-h-screen grid place-items-center bg-background px-4">
-        <div className="max-w-sm w-full text-center bg-card border border-border rounded-2xl p-8">
+        <div className="max-w-sm w-full text-center bg-card border border-border rounded-2xl p-8 shadow-soft">
           <h1 className="text-xl font-bold">Admin access</h1>
 
           <p className="mt-2 text-sm text-muted-foreground">Please sign in to continue.</p>
@@ -559,7 +563,7 @@ function AdminPage() {
   if (!isAdmin || permissionDenied) {
     return (
       <div className="min-h-screen grid place-items-center bg-background px-4">
-        <div className="max-w-sm w-full text-center bg-card border border-border rounded-2xl p-8">
+        <div className="max-w-sm w-full text-center bg-card border border-border rounded-2xl p-8 shadow-soft">
           <h1 className="text-xl font-bold">Not authorised</h1>
 
           <p className="mt-2 text-sm text-muted-foreground">
@@ -582,10 +586,10 @@ function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card">
-        <div className="mx-auto max-w-7xl px-5 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="sticky top-0 z-30 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/85">
+        <div className="mx-auto flex min-h-16 max-w-7xl flex-col gap-3 px-5 py-3 lg:h-16 lg:flex-row lg:items-center lg:justify-between lg:px-8 lg:py-0">
+          <div className="flex flex-wrap items-center gap-2 lg:gap-3">
             <div className="h-8 w-8 rounded-lg bg-hero-gradient grid place-items-center text-white font-bold text-sm">
               K
             </div>
@@ -609,7 +613,7 @@ function AdminPage() {
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={importing}
-              className="inline-flex items-center gap-2 rounded-full bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700 transition disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-blue-900/10 transition hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {importing ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -621,7 +625,7 @@ function AdminPage() {
 
             <button
               onClick={() => exportToCSV(filtered)}
-              className="inline-flex items-center gap-2 rounded-full bg-emerald-600 text-white px-4 py-2 text-sm font-semibold hover:bg-emerald-700 transition"
+              className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-emerald-900/10 transition hover:bg-emerald-700 dark:bg-emerald-500 dark:text-slate-950 dark:hover:bg-emerald-400"
             >
               <Download className="h-4 w-4" />
               Export CSV
@@ -630,7 +634,7 @@ function AdminPage() {
             <button
               onClick={handleClearEverything}
               disabled={clearing || importing || !rows?.length}
-              className="inline-flex items-center gap-2 rounded-full bg-red-600 text-white px-4 py-2 text-sm font-semibold hover:bg-red-700 transition disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-red-900/10 transition hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-400 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {clearing ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -638,6 +642,15 @@ function AdminPage() {
                 <Trash2 className="h-4 w-4" />
               )}
               {clearing ? "Clearing..." : "Clear Everything"}
+            </button>
+
+            <button
+              onClick={toggle}
+              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              className="inline-grid h-10 w-10 place-items-center rounded-full border border-border bg-background text-foreground transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
 
             <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">
@@ -656,9 +669,9 @@ function AdminPage() {
 
       <main className="mx-auto max-w-7xl px-5 lg:px-8 py-8 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="rounded-2xl border border-border bg-card p-5 flex items-center gap-4">
-            <div className="h-12 w-12 rounded-xl bg-blue-50 grid place-items-center shrink-0">
-              <Users className="h-6 w-6 text-blue-600" />
+          <div className="rounded-2xl border border-border bg-card p-5 flex items-center gap-4 shadow-soft">
+            <div className="h-12 w-12 rounded-xl bg-blue-50 grid place-items-center shrink-0 dark:bg-blue-500/15">
+              <Users className="h-6 w-6 text-blue-600 dark:text-blue-300" />
             </div>
 
             <div>
@@ -667,9 +680,9 @@ function AdminPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-border bg-card p-5 flex items-center gap-4">
-            <div className="h-12 w-12 rounded-xl bg-emerald-50 grid place-items-center shrink-0">
-              <TrendingUp className="h-6 w-6 text-emerald-600" />
+          <div className="rounded-2xl border border-border bg-card p-5 flex items-center gap-4 shadow-soft">
+            <div className="h-12 w-12 rounded-xl bg-emerald-50 grid place-items-center shrink-0 dark:bg-emerald-500/15">
+              <TrendingUp className="h-6 w-6 text-emerald-600 dark:text-emerald-300" />
             </div>
 
             <div>
@@ -678,9 +691,9 @@ function AdminPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-border bg-card p-5 flex items-center gap-4">
-            <div className="h-12 w-12 rounded-xl bg-violet-50 grid place-items-center shrink-0">
-              <BookOpen className="h-6 w-6 text-violet-600" />
+          <div className="rounded-2xl border border-border bg-card p-5 flex items-center gap-4 shadow-soft">
+            <div className="h-12 w-12 rounded-xl bg-violet-50 grid place-items-center shrink-0 dark:bg-violet-500/15">
+              <BookOpen className="h-6 w-6 text-violet-600 dark:text-violet-300" />
             </div>
 
             <div>
@@ -689,9 +702,9 @@ function AdminPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-border bg-card p-5 flex items-center gap-4">
-            <div className="h-12 w-12 rounded-xl bg-orange-50 grid place-items-center shrink-0">
-              <Users className="h-6 w-6 text-orange-600" />
+          <div className="rounded-2xl border border-border bg-card p-5 flex items-center gap-4 shadow-soft">
+            <div className="h-12 w-12 rounded-xl bg-orange-50 grid place-items-center shrink-0 dark:bg-orange-500/15">
+              <Users className="h-6 w-6 text-orange-600 dark:text-orange-300" />
             </div>
 
             <div>
@@ -710,14 +723,14 @@ function AdminPage() {
               onChange={(e) => setPhoneSearch(e.target.value)}
               inputMode="numeric"
               placeholder="Search by number"
-              className="w-full pl-9 pr-4 py-2 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-ring"
+              className="w-full pl-9 pr-4 py-2 rounded-xl border border-border bg-card text-sm outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
             />
           </div>
 
           <select
             value={courseFilter}
             onChange={(e) => setCourseFilter(e.target.value)}
-            className="rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+            className="rounded-xl border border-border bg-card px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-ring"
           >
             {courses.map((course) => (
               <option key={course} value={course}>
@@ -728,7 +741,7 @@ function AdminPage() {
 
           <button
             onClick={() => setSortDir((prev) => (prev === "desc" ? "asc" : "desc"))}
-            className="rounded-xl border border-border bg-background px-3 py-2 text-sm font-semibold hover:bg-muted transition"
+            className="rounded-xl border border-border bg-card px-3 py-2 text-sm font-semibold transition hover:bg-muted"
           >
             Date: {sortDir === "desc" ? "Newest First" : "Oldest First"}
           </button>
@@ -740,8 +753,8 @@ function AdminPage() {
         </div>
 
         {importProgress && (
-          <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3">
-            <div className="flex flex-wrap items-center justify-between gap-2 text-sm font-semibold text-blue-700">
+          <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 dark:border-blue-400/20 dark:bg-blue-500/10">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-sm font-semibold text-blue-700 dark:text-blue-200">
               <span>{importProgress.status}</span>
               <span>
                 Imported {importProgress.imported} / {importProgress.total || "..."}
@@ -749,7 +762,7 @@ function AdminPage() {
             </div>
 
             {!!importProgress.total && (
-              <div className="mt-3 h-2 overflow-hidden rounded-full bg-blue-100">
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-blue-100 dark:bg-blue-950">
                 <div
                   className="h-full rounded-full bg-blue-600 transition-all"
                   style={{
@@ -764,9 +777,13 @@ function AdminPage() {
           </div>
         )}
 
-        {importMessage && <p className="text-sm font-semibold text-emerald-600">{importMessage}</p>}
+        {importMessage && (
+          <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-300">
+            {importMessage}
+          </p>
+        )}
 
-        {error && <p className="text-sm text-red-500">{error}</p>}
+        {error && <p className="text-sm text-red-500 dark:text-red-300">{error}</p>}
 
         {!rows ? (
           <p className="text-muted-foreground">Loading bookings...</p>
@@ -774,7 +791,7 @@ function AdminPage() {
           <p className="text-muted-foreground">No bookings found.</p>
         ) : (
           <div className="space-y-4">
-            <div className="overflow-x-auto rounded-2xl border border-border bg-card">
+            <div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-soft">
               <table className="w-full text-sm">
                 <thead className="bg-muted text-left">
                   <tr>
@@ -811,8 +828,8 @@ function AdminPage() {
                       key={r.id}
                       className={
                         r.checkedOut
-                          ? "bg-emerald-50/60 hover:bg-emerald-50 transition"
-                          : "hover:bg-muted/40 transition"
+                          ? "bg-emerald-50/60 transition hover:bg-emerald-50 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/15"
+                          : "transition hover:bg-muted/40"
                       }
                     >
                       <td className="px-4 py-3 text-muted-foreground text-xs">
@@ -827,10 +844,12 @@ function AdminPage() {
 
                       <td className="px-4 py-3">{r.phone || "—"}</td>
 
-                      <td className="px-4 py-3 text-blue-600">{r.email || "—"}</td>
+                      <td className="px-4 py-3 text-blue-600 dark:text-blue-300">
+                        {r.email || "—"}
+                      </td>
 
                       <td className="px-4 py-3">
-                        <span className="rounded-full bg-violet-100 text-violet-700 text-xs font-semibold px-2 py-0.5">
+                        <span className="rounded-full bg-violet-100 text-violet-700 text-xs font-semibold px-2 py-0.5 dark:bg-violet-500/15 dark:text-violet-200">
                           {r.course || "—"}
                         </span>
                       </td>
@@ -863,7 +882,7 @@ function AdminPage() {
             </div>
 
             {pageCount > 1 && (
-              <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card px-4 py-3 shadow-soft sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-sm font-semibold text-muted-foreground">
                   Page {safeCurrentPage} of {pageCount}
                 </p>
@@ -872,7 +891,7 @@ function AdminPage() {
                   <button
                     onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
                     disabled={safeCurrentPage === 1}
-                    className="inline-flex items-center gap-1 rounded-xl border border-border bg-background px-3 py-2 text-sm font-semibold hover:bg-muted transition disabled:cursor-not-allowed disabled:opacity-50"
+                    className="inline-flex items-center gap-1 rounded-xl border border-border bg-background px-3 py-2 text-sm font-semibold transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <ChevronLeft className="h-4 w-4" />
                     Previous
@@ -887,7 +906,7 @@ function AdminPage() {
                           className={
                             page === safeCurrentPage
                               ? "h-9 min-w-9 rounded-lg bg-primary px-3 text-sm font-bold text-primary-foreground shadow-sm"
-                              : "h-9 min-w-9 rounded-lg px-3 text-sm font-semibold text-muted-foreground hover:bg-background hover:text-foreground transition"
+                              : "h-9 min-w-9 rounded-lg px-3 text-sm font-semibold text-muted-foreground transition hover:bg-background hover:text-foreground"
                           }
                         >
                           {page}
@@ -906,7 +925,7 @@ function AdminPage() {
                   <button
                     onClick={() => setCurrentPage((page) => Math.min(pageCount, page + 1))}
                     disabled={safeCurrentPage === pageCount}
-                    className="inline-flex items-center gap-1 rounded-xl border border-border bg-background px-3 py-2 text-sm font-semibold hover:bg-muted transition disabled:cursor-not-allowed disabled:opacity-50"
+                    className="inline-flex items-center gap-1 rounded-xl border border-border bg-background px-3 py-2 text-sm font-semibold transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Next
                     <ChevronRight className="h-4 w-4" />

@@ -228,6 +228,37 @@
   --shadow-glow: 0 22px 70px -24px rgba(0, 230, 118, 0.42);
 }
 
+.dark {
+  color-scheme: dark;
+  --background: #08111f;
+  --foreground: #edf6ff;
+  --card: #0d1a2d;
+  --card-foreground: #edf6ff;
+  --popover: #0d1a2d;
+  --popover-foreground: #edf6ff;
+  --primary: #f8fbff;
+  --primary-foreground: #08111f;
+  --secondary: #13243a;
+  --secondary-foreground: #edf6ff;
+  --muted: #13243a;
+  --muted-foreground: #9db0c8;
+  --accent: #22f08a;
+  --accent-foreground: #062316;
+  --destructive: #fb5d66;
+  --destructive-foreground: #fff7f7;
+  --border: rgba(159, 183, 215, 0.2);
+  --input: rgba(159, 183, 215, 0.28);
+  --ring: #22f08a;
+  --brand-yellow: #22f08a;
+  --brand-red: #fb5d66;
+  --brand-navy: #edf6ff;
+  --brand-navy-deep: #050b14;
+  --gradient-hero: linear-gradient(135deg, #173760 0%, #0f2a4c 48%, #07152a 100%);
+  --gradient-yellow: linear-gradient(135deg, #22f08a 0%, #13c96f 100%);
+  --shadow-soft: 0 18px 42px -26px rgba(0, 0, 0, 0.78);
+  --shadow-glow: 0 22px 70px -28px rgba(34, 240, 138, 0.35);
+}
+
 body { font-family: "Montserrat", system-ui, sans-serif; }
 h1, h2, h3, h4, .font-display { font-family: "Poppins", "Montserrat", system-ui, sans-serif; }
 
@@ -243,3 +274,7 @@ h1, h2, h3, h4, .font-display { font-family: "Poppins", "Montserrat", system-ui,
 }
 .input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(0, 230, 118, .16); }
 .input-error { border-color: #ef4444; }
+.dark .input {
+  background: var(--card);
+  color: var(--foreground);
+}
