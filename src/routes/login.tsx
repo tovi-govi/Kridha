@@ -1,10 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
-import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signInWithPopup,
-} from "firebase/auth";
+import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
 
@@ -16,7 +12,6 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -28,15 +23,10 @@ function LoginPage() {
     setLoading(true);
 
     try {
-      if (mode === "signin") {
-        await signInWithEmailAndPassword(auth, email, password);
-      } else {
-        await createUserWithEmailAndPassword(auth, email, password);
-      }
-
-      navigate({ to: "/" });
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Authentication failed");
+      await signInWithEmailAndPassword(auth, email.trim(), password);
+      navigate({ to: "/admin" });
+    } catch {
+      setError("Sign in failed. Check your credentials and try again.");
     } finally {
       setLoading(false);
     }
@@ -47,9 +37,9 @@ function LoginPage() {
 
     try {
       await signInWithPopup(auth, googleProvider);
-      navigate({ to: "/" });
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Google sign-in failed");
+      navigate({ to: "/admin" });
+    } catch {
+      setError("Google sign-in failed. Try again or use email sign-in.");
     }
   }
 
@@ -83,13 +73,9 @@ function LoginPage() {
   return (
     <div className="min-h-screen grid place-items-center bg-background px-4">
       <div className="max-w-sm w-full bg-card border border-border rounded-2xl p-8 shadow-soft">
-        <h1 className="text-2xl font-bold">
-          {mode === "signin" ? "Welcome back" : "Create account"}
-        </h1>
+        <h1 className="text-2xl font-bold">Admin sign in</h1>
 
-        <p className="mt-1 text-sm text-muted-foreground">
-          Sign in to track your bookings.
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">Sign in to manage bookings.</p>
 
         <button
           onClick={handleGoogle}
@@ -130,16 +116,9 @@ function LoginPage() {
             type="submit"
             className="w-full rounded-full bg-primary text-primary-foreground py-2.5 font-semibold disabled:opacity-60"
           >
-            {loading ? "..." : mode === "signin" ? "Sign in" : "Create account"}
+            {loading ? "..." : "Sign in"}
           </button>
         </form>
-
-        <button
-          onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-          className="mt-4 w-full text-sm text-muted-foreground hover:text-foreground"
-        >
-          {mode === "signin" ? "Need an account? Sign up" : "Have an account? Sign in"}
-        </button>
       </div>
     </div>
   );

@@ -11,7 +11,7 @@ import {
   writeBatch,
 } from "firebase/firestore";
 import * as XLSX from "xlsx";
-import { db, ADMIN_EMAILS } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
 import { ThemeProvider, useTheme } from "@/lib/theme-provider";
 import {
@@ -49,10 +49,19 @@ type Row = {
 type ImportedContact = Pick<Row, "name" | "email" | "phone">;
 
 const IMPORT_BATCH_SIZE = 100;
+const MAX_IMPORT_FILES = 5;
+const MAX_IMPORT_FILE_BYTES = 2 * 1024 * 1024;
+const MAX_IMPORT_ROWS = 1000;
 const CLEAR_BATCH_SIZE = 500;
 const PAGE_SIZE = 100;
 const PERMISSION_DENIED_MESSAGE =
-  "You are not authorised to manage bookings. Ask the site owner to add this email as an admin in both Vercel and Firebase.";
+  "You are not authorised to manage bookings. Ask the site owner to grant admin access in Firebase.";
+const MAX_NAME_LENGTH = 80;
+const MAX_EMAIL_LENGTH = 254;
+const MAX_PHONE_LENGTH = 20;
+const PHONE_PATTERN = /^[+()0-9 .-]{7,20}$/;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const IMPORT_EXTENSIONS = new Set(["csv", "xls", "xlsx"]);
 
 const IMPORT_ALIASES = {
   name: ["name", "fullname", "studentname", "customername"],
@@ -132,6 +141,38 @@ function formatCellValue(value: unknown) {
   return String(value).trim();
 }
 
+function cleanText(value: string, maxLength: number) {
+  return value.trim().replace(/\s+/g, " ").slice(0, maxLength);
+}
+
+function cleanImportedContact(contact: ImportedContact): ImportedContact {
+  return {
+    name: cleanText(contact.name || "", MAX_NAME_LENGTH),
+    email: cleanText(contact.email || "", MAX_EMAIL_LENGTH).toLowerCase(),
+    phone: cleanText(contact.phone || "", MAX_PHONE_LENGTH),
+  };
+}
+
+function hasValidOptionalEmail(value?: string) {
+  return !value || EMAIL_PATTERN.test(value);
+}
+
+function hasValidOptionalPhone(value?: string) {
+  return !value || PHONE_PATTERN.test(value);
+}
+
+function validateImportFile(file: File) {
+  const extension = file.name.split(".").pop()?.toLowerCase() || "";
+
+  if (!IMPORT_EXTENSIONS.has(extension)) {
+    throw new Error(`${file.name} is not a supported spreadsheet type.`);
+  }
+
+  if (file.size > MAX_IMPORT_FILE_BYTES) {
+    throw new Error(`${file.name} is larger than the 2 MB import limit.`);
+  }
+}
+
 function waitForNextPaint() {
   return new Promise<void>((resolve) => {
     requestAnimationFrame(() => resolve());
@@ -173,13 +214,23 @@ async function readContactsFromSpreadsheet(file: File) {
     raw: false,
   });
 
+  if (sheetRows.length > MAX_IMPORT_ROWS) {
+    throw new Error(`Import files can contain at most ${MAX_IMPORT_ROWS} rows.`);
+  }
+
   const contacts = sheetRows
     .map((row) => ({
       name: getImportedCell(row, "name"),
       email: getImportedCell(row, "email"),
       phone: getImportedCell(row, "phone"),
     }))
-    .filter((row) => row.name || row.email || row.phone);
+    .map(cleanImportedContact)
+    .filter(
+      (row) =>
+        (row.name || row.email || row.phone) &&
+        hasValidOptionalEmail(row.email) &&
+        hasValidOptionalPhone(row.phone),
+    );
 
   if (!contacts.length) {
     throw new Error("No rows found with Name, Email, or Phone columns in the selected file.");
@@ -190,6 +241,11 @@ async function readContactsFromSpreadsheet(file: File) {
 
 function exportToCSV(rows: Row[]) {
   const headers = ["Date", "Name", "Phone", "Email", "Course", "Notes", "Checked Out"];
+
+  const sanitizeCsvCell = (cell: unknown) => {
+    const value = String(cell ?? "");
+    return /^[=+\-@]/.test(value.trimStart()) ? `'${value}` : value;
+  };
 
   const data = rows.map((r) => [
     r.createdAt ? new Date(r.createdAt.seconds * 1000).toLocaleString() : "—",
@@ -202,7 +258,7 @@ function exportToCSV(rows: Row[]) {
   ]);
 
   const csv = [headers, ...data]
-    .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+    .map((row) => row.map((cell) => `"${sanitizeCsvCell(cell).replace(/"/g, '""')}"`).join(","))
     .join("\n");
 
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -255,10 +311,8 @@ function AdminDashboard() {
   const [sortDir, setSortDir] = useState<"desc" | "asc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const isAdmin = !!user?.email && ADMIN_EMAILS.includes(user.email.toLowerCase());
-
   const loadBookings = useCallback(async () => {
-    if (!isAdmin) return;
+    if (!user) return;
 
     setError(null);
     setPermissionDenied(false);
@@ -283,7 +337,7 @@ function AdminDashboard() {
       setError(err instanceof Error ? err.message : "Failed to load bookings");
       setRows([]);
     }
-  }, [isAdmin]);
+  }, [user]);
 
   useEffect(() => {
     loadBookings();
@@ -294,6 +348,10 @@ function AdminDashboard() {
     event.target.value = "";
 
     if (!files.length) return;
+    if (files.length > MAX_IMPORT_FILES) {
+      setError(`Select at most ${MAX_IMPORT_FILES} files at a time.`);
+      return;
+    }
 
     setImporting(true);
     setImportMessage(null);
@@ -302,6 +360,8 @@ function AdminDashboard() {
     setError(null);
 
     try {
+      files.forEach(validateImportFile);
+
       const contacts: ImportedContact[] = [];
       let skippedDuplicates = 0;
       const seenPhones = new Set(
@@ -545,7 +605,9 @@ function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className={`${theme} min-h-screen grid place-items-center bg-background text-muted-foreground`}>
+      <div
+        className={`${theme} min-h-screen grid place-items-center bg-background text-muted-foreground`}
+      >
         Loading...
       </div>
     );
@@ -572,7 +634,7 @@ function AdminDashboard() {
     );
   }
 
-  if (!isAdmin || permissionDenied) {
+  if (permissionDenied) {
     return (
       <div
         className={`${theme} min-h-screen grid place-items-center bg-background px-4 text-foreground`}
@@ -580,11 +642,7 @@ function AdminDashboard() {
         <div className="max-w-sm w-full text-center bg-card border border-border rounded-2xl p-8 shadow-soft">
           <h1 className="text-xl font-bold">Not authorised</h1>
 
-          <p className="mt-2 text-sm text-muted-foreground">
-            {permissionDenied
-              ? PERMISSION_DENIED_MESSAGE
-              : "This signed-in email is not on the admin list."}
-          </p>
+          <p className="mt-2 text-sm text-muted-foreground">{PERMISSION_DENIED_MESSAGE}</p>
 
           <p className="mt-2 text-xs text-muted-foreground">{user.email}</p>
 

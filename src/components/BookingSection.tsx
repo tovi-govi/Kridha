@@ -14,6 +14,13 @@ if (EMAILJS_PUBLIC_KEY) {
   emailjs.init(EMAILJS_PUBLIC_KEY);
 }
 
+const MAX_NAME_LENGTH = 80;
+const MAX_EMAIL_LENGTH = 254;
+const MAX_PHONE_LENGTH = 20;
+const MAX_MESSAGE_LENGTH = 500;
+const PHONE_PATTERN = /^[+()0-9 .-]{7,20}$/;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 const COURSES = [
   "Full Stack Developer",
   "Python Developer",
@@ -24,6 +31,46 @@ const COURSES = [
 ];
 
 const demoHighlights = ["EMI Available", "Limited Seats", "Placement Support"];
+
+function cleanText(value: string, maxLength: number) {
+  return value.trim().replace(/\s+/g, " ").slice(0, maxLength);
+}
+
+function normalizeBookingForm(form: {
+  name: string;
+  email: string;
+  phone: string;
+  course: string;
+  message: string;
+}) {
+  return {
+    name: cleanText(form.name, MAX_NAME_LENGTH),
+    email: cleanText(form.email, MAX_EMAIL_LENGTH).toLowerCase(),
+    phone: cleanText(form.phone, MAX_PHONE_LENGTH),
+    course: form.course,
+    message: form.message.trim().slice(0, MAX_MESSAGE_LENGTH),
+  };
+}
+
+function validateBookingForm(values: ReturnType<typeof normalizeBookingForm>) {
+  if (values.name.length < 2 || !values.phone || !values.course) {
+    return "Please fill in all required fields.";
+  }
+
+  if (!COURSES.includes(values.course)) {
+    return "Please choose a valid course.";
+  }
+
+  if (!PHONE_PATTERN.test(values.phone)) {
+    return "Please enter a valid phone number.";
+  }
+
+  if (values.email && !EMAIL_PATTERN.test(values.email)) {
+    return "Please enter a valid email address.";
+  }
+
+  return null;
+}
 
 export function BookingSection() {
   const [form, setForm] = useState({
@@ -50,19 +97,22 @@ export function BookingSection() {
     setLoading(true);
     setError(null);
 
-    if (!form.name || !form.phone || !form.course) {
-      setError("Please fill in all required fields.");
+    const cleanedForm = normalizeBookingForm(form);
+    const validationError = validateBookingForm(cleanedForm);
+
+    if (validationError) {
+      setError(validationError);
       setLoading(false);
       return;
     }
 
     try {
       await addDoc(collection(db, "bookings"), {
-        name: form.name,
-        email: form.email || "",
-        phone: form.phone,
-        course: form.course,
-        message: form.message || "",
+        name: cleanedForm.name,
+        email: cleanedForm.email,
+        phone: cleanedForm.phone,
+        course: cleanedForm.course,
+        message: cleanedForm.message,
         checkedOut: false,
         uid: auth.currentUser?.uid || null,
         createdAt: serverTimestamp(),
@@ -73,12 +123,12 @@ export function BookingSection() {
           EMAILJS_SERVICE_ID,
           EMAILJS_TEMPLATE_ID,
           {
-            to_email: form.email,
-            user_name: form.name,
-            user_email: form.email,
-            user_phone: form.phone,
-            course_name: form.course,
-            message: form.message,
+            to_email: cleanedForm.email,
+            user_name: cleanedForm.name,
+            user_email: cleanedForm.email,
+            user_phone: cleanedForm.phone,
+            course_name: cleanedForm.course,
+            message: cleanedForm.message,
           },
           EMAILJS_PUBLIC_KEY,
         );
@@ -95,9 +145,11 @@ export function BookingSection() {
       });
 
       setTimeout(() => setSubmitted(false), 5000);
-    } catch (err: unknown) {
-      console.error("Booking error:", err);
-      setError(err instanceof Error ? err.message : "Failed to submit booking.");
+    } catch (err) {
+      if (import.meta.env.DEV) {
+        console.error("Booking error:", err);
+      }
+      setError("Failed to submit booking. Please try again or contact us on WhatsApp.");
     } finally {
       setLoading(false);
     }
@@ -179,6 +231,7 @@ export function BookingSection() {
                 <input
                   required
                   type="text"
+                  maxLength={MAX_NAME_LENGTH}
                   value={form.name}
                   onChange={(e) => update("name", e.target.value)}
                   placeholder="Your full name"
@@ -191,6 +244,7 @@ export function BookingSection() {
 
                 <input
                   type="email"
+                  maxLength={MAX_EMAIL_LENGTH}
                   value={form.email}
                   onChange={(e) => update("email", e.target.value)}
                   placeholder="yourmail@gmail.com"
@@ -204,6 +258,8 @@ export function BookingSection() {
                 <input
                   required
                   type="tel"
+                  maxLength={MAX_PHONE_LENGTH}
+                  inputMode="tel"
                   value={form.phone}
                   onChange={(e) => update("phone", e.target.value)}
                   placeholder="+91 98765 43210"
@@ -232,6 +288,7 @@ export function BookingSection() {
                 <label className="mb-2 block text-sm font-semibold text-primary">Notes</label>
 
                 <textarea
+                  maxLength={MAX_MESSAGE_LENGTH}
                   value={form.message}
                   onChange={(e) => update("message", e.target.value)}
                   placeholder="Any message or doubt?"

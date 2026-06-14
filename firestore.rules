@@ -16,7 +16,7 @@ service cloud.firestore {
         && request.auth.token.email.lower() in adminEmails();
     }
 
-    function validBookingCreate() {
+    function hasBookingFields() {
       return request.resource.data.keys().hasOnly([
           "name",
           "email",
@@ -26,23 +26,95 @@ service cloud.firestore {
           "checkedOut",
           "uid",
           "createdAt"
-        ])
-        && request.resource.data.name is string
-        && request.resource.data.email is string
-        && request.resource.data.phone is string
-        && request.resource.data.course is string
-        && request.resource.data.message is string
-        && request.resource.data.checkedOut == false
+        ]);
+    }
+
+    function validEmail(value) {
+      return value is string
+        && value.size() <= 254
         && (
-          request.resource.data.uid == null
-          || request.resource.data.uid is string
-        )
+          value == ""
+          || value.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")
+        );
+    }
+
+    function validPhone(value) {
+      return value is string
+        && value.size() >= 7
+        && value.size() <= 20
+        && value.matches("^[+()0-9 .-]+$");
+    }
+
+    function validOptionalPhone(value) {
+      return value is string
+        && (
+          value == ""
+          || (
+            value.size() <= 20
+            && value.matches("^[+()0-9 .-]+$")
+          )
+        );
+    }
+
+    function validCourse(value) {
+      return value in [
+        "Full Stack Developer",
+        "Python Developer",
+        "AWS Cloud",
+        "Data Analytics",
+        "Digital Marketing",
+        "Cloud & DevOps"
+      ];
+    }
+
+    function validUid() {
+      return request.resource.data.uid == null
+        || (
+          request.auth != null
+          && request.resource.data.uid == request.auth.uid
+        );
+    }
+
+    function validCommonBookingData() {
+      return hasBookingFields()
+        && request.resource.data.name is string
+        && request.resource.data.name.size() <= 80
+        && validEmail(request.resource.data.email)
+        && request.resource.data.message is string
+        && request.resource.data.message.size() <= 500
+        && validUid()
         && request.resource.data.createdAt == request.time;
     }
 
+    function validPublicBookingCreate() {
+      return validCommonBookingData()
+        && request.resource.data.name.size() >= 2
+        && validPhone(request.resource.data.phone)
+        && request.resource.data.course is string
+        && validCourse(request.resource.data.course)
+        && request.resource.data.checkedOut == false;
+    }
+
+    function validAdminBookingCreate() {
+      return validCommonBookingData()
+        && validOptionalPhone(request.resource.data.phone)
+        && request.resource.data.course is string
+        && (
+          request.resource.data.course == ""
+          || validCourse(request.resource.data.course)
+        )
+        && request.resource.data.checkedOut is bool;
+    }
+
+    function validAdminBookingUpdate() {
+      return request.resource.data.diff(resource.data).changedKeys().hasOnly(["checkedOut"])
+        && request.resource.data.checkedOut is bool;
+    }
+
     match /bookings/{bookingId} {
-      allow create: if isAdmin() || validBookingCreate();
-      allow read, update, delete: if isAdmin();
+      allow create: if (isAdmin() && validAdminBookingCreate()) || validPublicBookingCreate();
+      allow read, delete: if isAdmin();
+      allow update: if isAdmin() && validAdminBookingUpdate();
     }
 
     match /{document=**} {
