@@ -66,7 +66,9 @@ export function Footer() {
             <h3 className="font-extrabold">Contact</h3>
             <div className="mt-3 grid gap-2 text-sm text-white/70">
               <span>{site.phoneDisplay}</span>
-              <span>{site.email}</span>
+              <a href={site.website} target="_blank" rel="noreferrer" className="hover:text-white">
+                {site.websiteDisplay}
+              </a>
               <motion.a
                 href={waLink("Hi Kridha, I want course details.")}
                 target="_blank"

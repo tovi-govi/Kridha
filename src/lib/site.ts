@@ -1,9 +1,11 @@
 export const site = {
   name: "Kridha",
   tagline: "Software Solutions Pvt. Ltd.",
-  whatsapp: "8309816381",
+  whatsapp: "919989044427",
   email: "tarsieriscool@gmail.com",
-  phoneDisplay: "+91 8309816381",
+  phoneDisplay: "9989044427 / 9989044428",
+  website: "https://www.kridhasoftware.com",
+  websiteDisplay: "www.kridhasoftware.com",
   originalFeeINR: 50000,
   feeINR: 34999,
   batch: "2026",
