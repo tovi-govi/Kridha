@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { site, waLink } from "@/lib/site";
+import { gmailComposeLink, site, waLink } from "@/lib/site";
 import { Logo } from "@/components/Logo";
 import { Reveal } from "@/components/Motion";
 
@@ -66,6 +66,14 @@ export function Footer() {
             <h3 className="font-extrabold">Contact</h3>
             <div className="mt-3 grid gap-2 text-sm text-white/70">
               <span>{site.phoneDisplay}</span>
+              <a
+                href={gmailComposeLink()}
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-white"
+              >
+                {site.email}
+              </a>
               <a href={site.website} target="_blank" rel="noreferrer" className="hover:text-white">
                 {site.websiteDisplay}
               </a>
